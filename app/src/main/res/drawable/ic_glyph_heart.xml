@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Favourites. Widened from the reference's single-lobe path so it reads as a heart. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M12 20.5 L3.6 12.1 A5.1 5.1 0 0 1 12 6.4 A5.1 5.1 0 0 1 20.4 12.1 Z"
+        android:strokeWidth="2.2"
+        android:strokeColor="#ffffff"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

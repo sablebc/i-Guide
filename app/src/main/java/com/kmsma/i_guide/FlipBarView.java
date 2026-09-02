@@ -84,6 +84,49 @@ public class FlipBarView extends FrameLayout {
         resetAutoDismissTimer();
     }
 
+    /**
+     * Shows the flip bar for a channel using its EPG entry: program title on the left,
+     * "5 CTV 8-8:30p" on the right, synopsis underneath. Falls back to the channel name
+     * when the guide has nothing for this slot.
+     */
+    public void show(Channel channel, @Nullable Program program) {
+        if (channel == null) {
+            return;
+        }
+        String channelLabel = channel.getNumber() + " " + channel.getName();
+        if (program == null) {
+            programTitleView.setText(channel.getName());
+            channelInfoView.setText(channelLabel);
+            programDescriptionView.setText(
+                    getContext().getString(R.string.no_information));
+            hdBadgeView.setVisibility(GONE);
+        } else {
+            programTitleView.setText(program.getTitle());
+            channelInfoView.setText(channelLabel + "   " + program.formatTimeRange());
+            programDescriptionView.setText(program.formatSynopsis());
+            hdBadgeView.setVisibility(program.isHd() ? VISIBLE : GONE);
+        }
+        reveal();
+        resetAutoDismissTimer();
+    }
+
+    /** Slides the bar up if it is not already on screen. */
+    private void reveal() {
+        if (showing) {
+            return;
+        }
+        showing = true;
+        setVisibility(VISIBLE);
+        setAlpha(0f);
+        setTranslationY(getHeight() > 0 ? getHeight() : 200f);
+        animate()
+                .translationY(0f)
+                .alpha(1f)
+                .setDuration(ANIM_DURATION_MS)
+                .setInterpolator(new DecelerateInterpolator())
+                .start();
+    }
+
     /** Restarts the 5-second inactivity timer without changing visibility. */
     public void resetAutoDismissTimer() {
         handler.removeCallbacks(dismissRunnable);

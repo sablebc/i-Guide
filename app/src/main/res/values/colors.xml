@@ -84,4 +84,80 @@
 
     <color name="ig_white">#ffffff</color>
     <color name="ig_transparent">#00000000</color>
+
+    <!-- ── Full-screen guide background ── -->
+    <color name="ig_screen_bg_1">#1c2c74</color>
+    <color name="ig_screen_bg_2">#101c54</color>
+    <color name="ig_screen_bg_3">#0a1440</color>
+
+    <!-- ── Header brand block / badge ── -->
+    <color name="ig_header_brand_1">#3a5cb0</color>
+    <color name="ig_header_brand_2">#24408c</color>
+    <color name="ig_header_divider">#7a9ae0</color>
+    <color name="ig_header_badge_1">#8ab0e8</color>
+    <color name="ig_header_badge_2">#3a60b0</color>
+    <color name="ig_header_badge_border">#a8c4ec</color>
+
+    <!-- ── Grid borders / edges ── -->
+    <color name="ig_grid_border">#16255c</color>
+    <color name="ig_section_top_edge">#2a4080</color>
+    <color name="ig_section_bottom_edge">#000818</color>
+    <color name="ig_title_bar_edge">#2a3a80</color>
+    <color name="ig_cell_highlight">#2effffff</color>
+    <color name="ig_cell_highlight_selected">#80ffffff</color>
+
+    <!-- ── Live preview placeholder box ── -->
+    <color name="ig_preview_1">#3a4a66</color>
+    <color name="ig_preview_2">#1c2840</color>
+    <color name="ig_preview_3">#141c30</color>
+    <color name="ig_preview_text">#56668a</color>
+
+    <!-- ── Quick Menu ── -->
+    <color name="ig_qm_bar_1">#5a80c8</color>
+    <color name="ig_qm_bar_2">#3a5cac</color>
+    <color name="ig_qm_bar_3">#2a4894</color>
+    <color name="ig_qm_bar_4">#3555a4</color>
+    <color name="ig_qm_bar_top_edge">#8aaae0</color>
+    <color name="ig_qm_tile_1">#7a9ae0</color>
+    <color name="ig_qm_tile_2">#4a68b8</color>
+    <color name="ig_qm_tile_3">#3a55a4</color>
+    <color name="ig_qm_tile_4">#4260b0</color>
+    <color name="ig_qm_tile_border">#2a4088</color>
+    <color name="ig_qm_label_bg_1">#eb0c143c</color>
+    <color name="ig_qm_label_bg_2">#eb080e2c</color>
+
+    <!-- ── Program Info action icons ── -->
+    <color name="ig_action_icon_1">#8aa8e8</color>
+    <color name="ig_action_icon_2">#4a68b8</color>
+    <color name="ig_action_icon_3">#2a4898</color>
+    <color name="ig_action_icon_border">#1a3070</color>
+    <color name="ig_record_red">#e02020</color>
+
+    <!-- ── Favourites tabs ── -->
+    <color name="ig_tab_bg">#000614</color>
+    <color name="ig_tab_border">#1e2c60</color>
+    <color name="ig_tab_border_active">#b09000</color>
+
+    <!-- ── Music / News category cells ── -->
+    <color name="ig_music_1">#d472a4</color>
+    <color name="ig_music_2">#b24c80</color>
+    <color name="ig_music_3">#a44274</color>
+    <color name="ig_music_4">#ac487c</color>
+    <color name="ig_news_1">#d4834c</color>
+    <color name="ig_news_2">#b06030</color>
+    <color name="ig_news_3">#a2562a</color>
+    <color name="ig_news_4">#aa5c30</color>
+
+    <!-- ── Text ── -->
+    <color name="ig_text_channel">#d0daf4</color>
+    <color name="ig_text_panel">#e8e2f8</color>
+    <color name="ig_text_menu_desc">#d8d0f0</color>
+    <color name="ig_text_jellyfin">#b8c4e8</color>
+    <color name="ig_text_selected_sub">#403800</color>
+    <color name="ig_text_fav_time">#c8d2f0</color>
+    <color name="ig_flip_bar_meta">#d8e0f4</color>
+
+    <!-- ── Overlay scrims ── -->
+    <color name="ig_scrim_strong">#bf0a1440</color>
+    <color name="ig_scrim_soft">#990a1440</color>
 </resources>

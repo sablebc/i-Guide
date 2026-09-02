@@ -28,6 +28,23 @@ public class ChannelManager {
         return channels.get(currentIndex);
     }
 
+    /**
+     * Points the cursor at the channel with the given id so that subsequent
+     * next/previous calls continue from there. Returns whether it was found.
+     */
+    public boolean selectById(@Nullable String id) {
+        if (id == null) {
+            return false;
+        }
+        for (int i = 0; i < channels.size(); i++) {
+            if (id.equals(channels.get(i).getId())) {
+                currentIndex = i;
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Moves to the next channel (wraps around) and returns it. */
     @Nullable
     public Channel nextChannel() {

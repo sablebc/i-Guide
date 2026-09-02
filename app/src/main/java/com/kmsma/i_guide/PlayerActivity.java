@@ -3,41 +3,80 @@ package com.kmsma.i_guide;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.util.MimeTypes;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 
 /**
- * Full-screen live TV player. Fetches the Tunarr channel list, plays the first
- * channel's HLS stream, and shows the Flip Bar overlay on channel change / OK press.
+ * Full-screen live TV player and host for the whole guide UI.
+ *
+ * <p>Everything runs in this one activity so the video surface is never torn down: the
+ * guide pages stack in {@code screen_container} above the video, and while one is
+ * showing the {@link PlayerView} is scaled into that page's preview slot and raised
+ * above it. That way "live preview" really is the live stream.
  */
-public class PlayerActivity extends AppCompatActivity {
+public class PlayerActivity extends AppCompatActivity
+        implements ScreenHost, EpgRepository.Listener {
 
+    private FrameLayout root;
     private PlayerView playerView;
+    private FrameLayout screenContainer;
+    private FrameLayout overlayContainer;
     private FlipBarView flipBarView;
+    private QuickMenuView quickMenuView;
+    private MiniGuideView miniGuideView;
 
-    private final TunarrApiClient apiClient = new TunarrApiClient();
+    private final EpgRepository epg = EpgRepository.get();
     private final ChannelManager channelManager = new ChannelManager();
+    private final Deque<GuideScreen> screenStack = new ArrayDeque<>();
+
+    private FavouritesStore favourites;
 
     @Nullable
     private ExoPlayer player;
+    @Nullable
+    private Channel tunedChannel;
+
+    /** Keeps the video glued to the active page's preview slot across re-layouts. */
+    @Nullable
+    private ViewTreeObserver.OnGlobalLayoutListener previewLayoutListener;
+    @Nullable
+    private View previewSlot;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
 
+        root = findViewById(R.id.player_root);
         playerView = findViewById(R.id.player_view);
+        screenContainer = findViewById(R.id.screen_container);
+        overlayContainer = findViewById(R.id.overlay_container);
         flipBarView = findViewById(R.id.flip_bar);
+        quickMenuView = findViewById(R.id.quick_menu);
+        miniGuideView = findViewById(R.id.mini_guide);
+
+        favourites = new FavouritesStore(this);
+
+        quickMenuView.setOnItemChosenListener(this::onQuickMenuItem);
+        miniGuideView.setListener(this::tuneTo);
 
         // On API 23 and below, wait until onResume to acquire the player;
         // on API 24+ (multi-window aware) it happens in onStart instead.
@@ -45,19 +84,24 @@ public class PlayerActivity extends AppCompatActivity {
             initializePlayer();
         }
 
-        loadChannels();
+        epg.addListener(this);
+        epg.load();
 
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if (flipBarView.isShowing()) {
-                    flipBarView.hide();
-                } else {
+                if (!handleBack()) {
                     setEnabled(false);
                     getOnBackPressedDispatcher().onBackPressed();
                 }
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        epg.removeListener(this);
+        super.onDestroy();
     }
 
     @Override
@@ -92,29 +136,30 @@ public class PlayerActivity extends AppCompatActivity {
         }
     }
 
-    private void loadChannels() {
-        apiClient.fetchChannels(new TunarrApiClient.ChannelListCallback() {
-            @Override
-            public void onSuccess(List<Channel> channels) {
-                runOnUiThread(() -> {
-                    channelManager.setChannels(channels);
-                    if (channelManager.hasChannels()) {
-                        tuneToCurrentChannel();
-                    } else {
-                        Toast.makeText(PlayerActivity.this,
-                                R.string.no_channels_available, Toast.LENGTH_LONG).show();
-                    }
-                });
-            }
+    // ---- EPG ---------------------------------------------------------------
 
-            @Override
-            public void onFailure(Exception e) {
-                runOnUiThread(() -> Toast.makeText(PlayerActivity.this,
-                        getString(R.string.no_channels_available) + ": " + e.getMessage(),
-                        Toast.LENGTH_LONG).show());
-            }
-        });
+    @Override
+    public void onEpgUpdated() {
+        List<Channel> channels = epg.getChannels();
+        channelManager.setChannels(channels);
+        if (tunedChannel != null) {
+            // A refresh must not knock the cursor back to the top of the line-up.
+            channelManager.selectById(tunedChannel.getId());
+        } else if (!channels.isEmpty()) {
+            tuneToCurrentChannel();
+        }
     }
+
+    @Override
+    public void onEpgFailed(Exception e) {
+        if (!epg.hasChannels()) {
+            Toast.makeText(this,
+                    getString(R.string.no_channels_available) + ": " + e.getMessage(),
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+    // ---- Playback ----------------------------------------------------------
 
     private void initializePlayer() {
         if (player != null) {
@@ -144,10 +189,11 @@ public class PlayerActivity extends AppCompatActivity {
             return;
         }
         playChannel(current);
-        flipBarView.show(current, current.getName(), false);
+        showFlipBar();
     }
 
     private void playChannel(Channel channel) {
+        tunedChannel = channel;
         if (player == null) {
             return;
         }
@@ -160,31 +206,6 @@ public class PlayerActivity extends AppCompatActivity {
         player.prepare();
     }
 
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        switch (keyCode) {
-            case KeyEvent.KEYCODE_DPAD_UP:
-                changeChannel(true);
-                return true;
-            case KeyEvent.KEYCODE_DPAD_DOWN:
-                changeChannel(false);
-                return true;
-            case KeyEvent.KEYCODE_DPAD_CENTER:
-            case KeyEvent.KEYCODE_ENTER:
-                showFlipBar();
-                return true;
-            case KeyEvent.KEYCODE_DPAD_LEFT:
-            case KeyEvent.KEYCODE_DPAD_RIGHT:
-                // Reserved for future use; still resets the flip bar's dismiss timer.
-                if (flipBarView.isShowing()) {
-                    flipBarView.resetAutoDismissTimer();
-                }
-                return true;
-            default:
-                return super.onKeyDown(keyCode, event);
-        }
-    }
-
     private void changeChannel(boolean up) {
         if (!channelManager.hasChannels()) {
             return;
@@ -194,14 +215,283 @@ public class PlayerActivity extends AppCompatActivity {
             return;
         }
         playChannel(next);
-        flipBarView.show(next, next.getName(), false);
+        showFlipBar();
     }
 
     private void showFlipBar() {
-        Channel current = channelManager.getCurrentChannel();
-        if (current == null) {
+        if (tunedChannel == null) {
             return;
         }
-        flipBarView.show(current, current.getName(), false);
+        flipBarView.show(tunedChannel, epg.currentProgram(tunedChannel));
+    }
+
+    // ---- ScreenHost --------------------------------------------------------
+
+    @Override
+    public void pushScreen(@NonNull GuideScreen screen) {
+        hideOverlays();
+        GuideScreen previous = screenStack.peek();
+        if (previous != null) {
+            previous.onHidden();
+            previous.setVisibility(View.GONE);
+        }
+        screenStack.push(screen);
+        screenContainer.addView(screen, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        screenContainer.setVisibility(View.VISIBLE);
+        screen.onShown();
+        attachLivePreview(screen);
+    }
+
+    @Override
+    public void popScreen() {
+        GuideScreen top = screenStack.poll();
+        if (top == null) {
+            return;
+        }
+        top.onHidden();
+        screenContainer.removeView(top);
+
+        GuideScreen next = screenStack.peek();
+        if (next == null) {
+            returnToLiveVideo();
+            return;
+        }
+        next.setVisibility(View.VISIBLE);
+        next.onShown();
+        attachLivePreview(next);
+    }
+
+    @Override
+    public void returnToLiveVideo() {
+        for (GuideScreen screen : screenStack) {
+            screen.onHidden();
+        }
+        screenStack.clear();
+        screenContainer.removeAllViews();
+        screenContainer.setVisibility(View.GONE);
+        detachLivePreview();
+    }
+
+    @Override
+    public void tuneTo(@Nullable Channel channel) {
+        if (channel != null) {
+            channelManager.selectById(channel.getId());
+            playChannel(channel);
+        }
+        returnToLiveVideo();
+        hideOverlays();
+        showFlipBar();
+    }
+
+    @Nullable
+    @Override
+    public Channel getTunedChannel() {
+        return tunedChannel;
+    }
+
+    @NonNull
+    @Override
+    public FavouritesStore getFavourites() {
+        return favourites;
+    }
+
+    @Override
+    public void bindLivePreview(@Nullable View slot) {
+        if (slot == null) {
+            detachLivePreview();
+        } else {
+            attachPreviewSlot(slot);
+        }
+    }
+
+    // ---- Live preview placement -------------------------------------------
+
+    private void attachLivePreview(GuideScreen screen) {
+        View slot = screen.getLivePreviewSlot();
+        if (slot == null) {
+            detachLivePreview();
+        } else {
+            attachPreviewSlot(slot);
+        }
+    }
+
+    /**
+     * Moves the video into the given slot and keeps it there. A global layout listener
+     * re-measures on every pass, which covers the first frame (when the slot has no size
+     * yet) as well as later page changes.
+     */
+    private void attachPreviewSlot(@NonNull View slot) {
+        previewSlot = slot;
+        playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_ZOOM);
+        playerView.bringToFront();
+
+        if (previewLayoutListener == null) {
+            previewLayoutListener = this::syncPreviewBounds;
+            root.getViewTreeObserver().addOnGlobalLayoutListener(previewLayoutListener);
+        }
+        syncPreviewBounds();
+    }
+
+    private void syncPreviewBounds() {
+        View slot = previewSlot;
+        if (slot == null || slot.getWidth() == 0 || slot.getHeight() == 0) {
+            return;
+        }
+        int[] rootLocation = new int[2];
+        int[] slotLocation = new int[2];
+        root.getLocationInWindow(rootLocation);
+        slot.getLocationInWindow(slotLocation);
+
+        FrameLayout.LayoutParams lp =
+                new FrameLayout.LayoutParams(slot.getWidth(), slot.getHeight());
+        lp.leftMargin = slotLocation[0] - rootLocation[0];
+        lp.topMargin = slotLocation[1] - rootLocation[1];
+
+        FrameLayout.LayoutParams existing =
+                (FrameLayout.LayoutParams) playerView.getLayoutParams();
+        if (existing.width == lp.width && existing.height == lp.height
+                && existing.leftMargin == lp.leftMargin && existing.topMargin == lp.topMargin) {
+            return;
+        }
+        playerView.setLayoutParams(lp);
+    }
+
+    private void detachLivePreview() {
+        previewSlot = null;
+        if (previewLayoutListener != null) {
+            root.getViewTreeObserver().removeOnGlobalLayoutListener(previewLayoutListener);
+            previewLayoutListener = null;
+        }
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        playerView.setLayoutParams(lp);
+        playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
+        // Put the bottom overlays back above the video now that it fills the screen.
+        overlayContainer.bringToFront();
+    }
+
+    // ---- Quick Menu --------------------------------------------------------
+
+    private void onQuickMenuItem(@NonNull QuickMenuView.Item item) {
+        quickMenuView.hide();
+        switch (item) {
+            case MAIN_MENU:
+                pushScreen(new MainMenuScreen(this, this));
+                break;
+            case GUIDE:
+                pushScreen(new ListingsByTimeScreen(this, this));
+                break;
+            case FAVOURITES:
+                pushScreen(new FavouritesScreen(this, this));
+                break;
+            case MOVIES:
+                pushScreen(new ListingsByTimeScreen(this, this, ProgramCategory.MOVIES));
+                break;
+            case KIDS:
+                pushScreen(new ListingsByTimeScreen(this, this, ProgramCategory.KIDS));
+                break;
+            case SPORTS:
+                pushScreen(new ListingsByTimeScreen(this, this, ProgramCategory.SPORTS));
+                break;
+            case MUSIC:
+                pushScreen(new ListingsByTimeScreen(this, this, ProgramCategory.MUSIC));
+                break;
+            case JELLYFIN:
+            case HDTV:
+            case SEARCH:
+            case SETTINGS:
+            default:
+                // Search, the Jellyfin browser and Settings are out of scope for this build.
+                Toast.makeText(this, R.string.not_available_yet, Toast.LENGTH_SHORT).show();
+                break;
+        }
+    }
+
+    private void hideOverlays() {
+        flipBarView.hide();
+        quickMenuView.hide();
+        miniGuideView.hide();
+    }
+
+    // ---- Input -------------------------------------------------------------
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        GuideScreen top = screenStack.peek();
+        if (top != null) {
+            if (top.onScreenKeyDown(keyCode, event)) {
+                return true;
+            }
+            return super.onKeyDown(keyCode, event);
+        }
+        if (quickMenuView.isShowing() && quickMenuView.handleKey(keyCode)) {
+            return true;
+        }
+        if (miniGuideView.isShowing() && miniGuideView.handleKey(keyCode)) {
+            return true;
+        }
+        return handleLiveTvKey(keyCode) || super.onKeyDown(keyCode, event);
+    }
+
+    private boolean handleLiveTvKey(int keyCode) {
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_DPAD_UP:
+                changeChannel(true);
+                return true;
+            case KeyEvent.KEYCODE_DPAD_DOWN:
+                changeChannel(false);
+                return true;
+            case KeyEvent.KEYCODE_DPAD_CENTER:
+            case KeyEvent.KEYCODE_ENTER:
+            case KeyEvent.KEYCODE_INFO:
+                showFlipBar();
+                return true;
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+                flipBarView.hide();
+                miniGuideView.show(tunedChannel);
+                return true;
+            case KeyEvent.KEYCODE_GUIDE:
+            case KeyEvent.KEYCODE_MENU:
+            case KeyEvent.KEYCODE_TV_CONTENTS_MENU:
+                flipBarView.hide();
+                miniGuideView.hide();
+                quickMenuView.show();
+                return true;
+            case KeyEvent.KEYCODE_BOOKMARK:
+            case KeyEvent.KEYCODE_PROG_YELLOW:
+                if (tunedChannel != null) {
+                    boolean added = favourites.toggle(tunedChannel);
+                    Toast.makeText(this, added
+                                    ? R.string.added_to_favourites
+                                    : R.string.removed_from_favourites,
+                            Toast.LENGTH_SHORT).show();
+                }
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /** BACK: dismiss the top overlay, else pop a screen, else fall through to exit. */
+    private boolean handleBack() {
+        if (!screenStack.isEmpty()) {
+            popScreen();
+            return true;
+        }
+        if (quickMenuView.isShowing()) {
+            quickMenuView.hide();
+            return true;
+        }
+        if (miniGuideView.isShowing()) {
+            miniGuideView.hide();
+            return true;
+        }
+        if (flipBarView.isShowing()) {
+            flipBarView.hide();
+            return true;
+        }
+        return false;
     }
 }

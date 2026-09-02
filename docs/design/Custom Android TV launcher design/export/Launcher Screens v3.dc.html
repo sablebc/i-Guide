@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet>
+  <link href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: #0a1440; overflow: hidden; font-family: 'PT Sans', 'Trebuchet MS', Tahoma, sans-serif; }
+    @keyframes slide-up { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    a { color: #f8e030; } a:hover { color: #fff060; }
+  </style>
+</helmet>
+
+<!-- dev screen switcher -->
+<div style="display: flex; align-items: center; height: 26px; padding: 0 6px; gap: 2px; background: #060c24; border-bottom: 1px solid #1a2450;">
+  <sc-for list="{{ screenTabs }}" as="tab">
+    {{ tab.el }}
+  </sc-for>
+</div>
+
+<!-- ─── i-Guide Header (guide screens) ─── -->
+<sc-if value="{{ showHeader }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; align-items: stretch; height: 42px; background: linear-gradient(180deg, #7aa0dc 0%, #4a74c0 45%, #2f54a0 52%, #3a60b0 100%); border-bottom: 2px solid #0a1440;">
+  <div style="background: linear-gradient(180deg, #3a5cb0 0%, #24408c 100%); padding: 4px 14px 4px 10px; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid #7a9ae0; box-shadow: 2px 0 4px rgba(0,0,0,0.25);">
+    <span style="font: italic 700 13px 'PT Sans', sans-serif; color: #ffffff; line-height: 1.05; letter-spacing: 0.3px; text-shadow: 0 1px 1px rgba(0,0,0,0.5);">DIGITAL</span>
+    <span style="font: italic 700 13px 'PT Sans', sans-serif; color: #ffffff; line-height: 1.05; letter-spacing: 0.3px; text-shadow: 0 1px 1px rgba(0,0,0,0.5);">CABLE</span>
+  </div>
+  <div style="flex: 1;"></div>
+  <div style="display: flex; align-items: center; padding-right: 14px;">
+    <span style="font: 700 15px 'PT Sans', sans-serif; color: #ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">{{ currentTime }}</span>
+  </div>
+  <div style="display: flex; align-items: center; padding-right: 12px;">
+    <div style="width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #8ab0e8, #3a60b0 70%); border: 1px solid #a8c4ec; display: flex; align-items: center; justify-content: center;">
+      <span style="font: italic 700 13px 'PT Sans', sans-serif; color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,0.4);">tv</span>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<!-- ═══════ QUICK MENU (overlay over live TV) ═══════ -->
+<sc-if value="{{ isScreen_quickmenu }}" hint-placeholder-val="{{ true }}">
+<div style="width: 100%; height: calc(100vh - 26px); background: linear-gradient(160deg, #3a4a66 0%, #202c44 55%, #141c30 100%); position: relative; display: flex; flex-direction: column; justify-content: flex-end;">
+  <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
+    <span style="font: 400 15px monospace; color: #56668a;">live tv — active stream</span>
+  </div>
+  <div style="position: relative; z-index: 5; padding-bottom: 34px;">
+    <div style="height: 44px; background: linear-gradient(180deg, rgba(10,20,64,0) 0%, rgba(10,20,64,0.75) 100%);"></div>
+    <div style="display: inline-flex; align-items: center; background: linear-gradient(180deg, #8a78cc 0%, #6a55b4 50%, #56439c 100%); padding: 3px 16px 3px 10px; border-radius: 0 8px 0 0; margin-left: 18px;">
+      <span style="font: 700 12px 'PT Sans', sans-serif; color: #ffffff; text-shadow: 0 1px 1px rgba(0,0,0,0.5);">Quick Menu</span>
+    </div>
+    <div style="background: linear-gradient(180deg, #5a80c8 0%, #3a5cac 45%, #2a4894 55%, #3555a4 100%); border-top: 1px solid #8aaae0; border-bottom: 1px solid #0a1440; padding: 8px 18px; display: flex; gap: 8px; align-items: center;">
+      <sc-for list="{{ quickMenuItems }}" as="qm">
+        {{ qm.el }}
+      </sc-for>
+    </div>
+    <div style="background: linear-gradient(180deg, rgba(12,20,60,0.92) 0%, rgba(8,14,44,0.92) 100%); padding: 5px 20px; border-bottom: 1px solid #2a4080;">
+      <span style="font: 700 13px 'PT Sans', sans-serif; color: #f8e030; text-shadow: 0 1px 1px rgba(0,0,0,0.6);">{{ qmFocusLabel }}</span>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<!-- ═══════ MAIN MENU ═══════ -->
+<sc-if value="{{ isScreen_mainmenu }}" hint-placeholder-val="{{ false }}">
+<div style="width: 100%; height: calc(100vh - 70px); background: linear-gradient(180deg, #1c2c74 0%, #101c54 40%, #0a1440 100%); display: flex; flex-direction: column;">
+  <div style="display: flex; align-items: stretch; height: 158px;">
+    <div style="flex: 1; background: linear-gradient(180deg, #8a78c8 0%, #6a55b0 55%, #503f98 100%); border-right: 2px solid #0a1440; display: flex; flex-direction: column;">
+      <div style="background: linear-gradient(180deg, #6a8ad8 0%, #4a68c0 50%, #3a55b0 100%); padding: 5px 14px; border-bottom: 1px solid #2a3a80;">
+        <span style="font: 700 14px 'PT Sans', sans-serif; color: #ffffff; text-shadow: 0 1px 1px rgba(0,0,0,0.5);">Main Menu</span>
+      </div>
+      <div style="padding: 10px 14px; flex: 1;">
+        <div style="font: 400 13px 'PT Sans', sans-serif; color: #ffffff; line-height: 1.45; text-shadow: 0 1px 1px rgba(0,0,0,0.4);">Browse the program guide, search your Jellyfin library, and manage favourites and recordings — all in one place.</div>
+      </div>
+      <div style="padding: 0 14px 8px;">
+        <span style="font: 400 12px 'PT Sans', sans-serif; color: #d8d0f0;">{{ currentTime }} — CH 5 CTV now playing</span>
+      </div>
+    </div>
+    <div style="width: 286px; background: linear-gradient(135deg, #3a4a66 0%, #1c2840 70%, #141c30 100%); border-bottom: 2px solid #0a1440; display: flex; align-items: center; justify-content: center;">
+      <span style="font: 400 12px monospace; color: #56668a;">live preview</span>
+    </div>
+  </div>
+  <div style="display: flex; align-items: center; background: linear-gradient(180deg, #101838 0%, #0a1230 100%); border-top: 1px solid #2a4080; border-bottom: 1px solid #000818; padding: 4px 14px; gap: 8px;">
+    <span style="font: 700 11px 'PT Sans', sans-serif; color: #f8e030;">▸</span>
+    <span style="font: 700 13px 'PT Sans', sans-serif; color: #ffffff; text-shadow: 0 1px 1px rgba(0,0,0,0.5);">Menu</span>
+  </div>
+  <div style="flex: 1; overflow-y: auto;">
+    <sc-for list="{{ mainMenuItems }}" as="mi">
+      {{ mi.el }}
+    </sc-for>
+  </div>
+  <div style="background: linear-gradient(180deg, #4a6ab8 0%, #35519c 50%, #2a4488 100%); border-top: 1px solid #7a9ae0; padding: 5px 16px;">
+    <span style="font: 400 12px 'PT Sans', sans-serif; color: #ffffff; text-shadow: 0 1px 1px rgba(0,0,0,0.5);">Press ▲▼ to browse, then press OK/Select</span>
+  </div>
+</div>
+</sc-if>
+
+<!-- ═══════ LISTINGS BY TIME ═══════ -->
+<sc-if value="{{ isScreen_bytime }}" hint-placeholder-val="{{ false }}">
+<div style="width: 100%; height: calc(100vh - 70px); background: linear-gradient(180deg, #1c2c74 0%, #101c54 40%, #0a1440 100%); display: flex; flex-direction: column;">
+  <div style="display: flex; align-items: stretch; height: 132px;">
+    <div style="flex: 1; background: linear-gradient(180deg, #8a78c8 0%, #6a55b0 55%, #503f98 100%); border-right: 2px solid #0a1440; display: flex; flex-direction: column;">
+      <div style="background: linear-gradient(180deg, #6a8ad8 0%, #4a68c0 50%, #3a55b0 100%); padding: 4px 14px; border-bottom: 1px solid #2a3a80; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font: 700 14px 'PT Sans', sans-serif; color: #ffffff; text-shadow: 0 1px 1px rgba(0,0,0,0.5);">{{ selInfo.title }}</span>
+        <span style="font: 700 12px 'PT Sans', sans-serif; color: #ffffff;">{{ selInfo.chan }}</span>
+      </div>
+      <div style="padding: 8px 14px; flex: 1; overflow: hidden;">
+        <div style="font: 400 12px 'PT Sans', sans-serif; color: #e8e2f8; text-shadow: 0 1px 1px rgba(0,0,0,0.4);">{{ selInfo.time }}</div>
+        <div style="font: 400 12px 'PT Sans', sans-serif; color: #ffffff; line-height: 1.4; margin-top: 4px; text-shadow: 0 1px 1px rgba(0,0,0,0.4);">{{ selInfo.desc }}</div>
+      </div>
+    </div>
+    <div style="width: 236px; background: linear-gradient(135deg, #3a4a66 0%, #1c2840 70%, #141c30 100%); border-bottom: 2px solid #0a1440; display: flex; align-items: center; justify-content: center;">
+      <span style="font: 400 12px monospace; color: #56668a;">live preview</span>
+    </div>
+  </div>
+  <!-- time header -->
+  <div style="display: flex; align-items: stretch; background: linear-gradient(180deg, #101838 0%, #0a1230 100%); border-top: 1px solid #2a4080; border-bottom: 1px solid #000818; height: 24px;">
+    <div style="width: 74px; display: flex; align-items: center; padding-left: 10px;">
+      <span style="font: 700 11px 'PT Sans', sans-serif; color: #f8e030;">▸</span>
+    </div>
+    <sc-for list="{{ timeSlots }}" as="ts">
+      <div style="flex: 1; display: flex; align-items: center; padding-left: 8px; border-left: 1px solid #1e2c60;">
+        <span style="font: 700 12px 'PT Sans', sans-serif; color: #ffffff; text-shadow: 0 1px 1px rgba(0,0,0,0.5);">{{ ts }}</span>
+      </div>
+    </sc-for>
+  </div>
+  <div style="flex: 1; overflow-y: auto;">
+    <sc-for list="{{ guideRows }}" as="row">
+      {{ row.el }}
+    </sc-for>
+  </div>
+  <div style="background: linear-gradient(180deg, #4a6ab8 0%, #35519c 50%, #2a4488 100%); border-top: 1px solid #7a9ae0; padding: 5px 16px; display: flex; justify-content: space-between;">
+    <span style="font: 400 12px 'PT Sans', sans-serif; color: #ffffff; text-shadow: 0 1px 1px rgba(0,0,0,0.5);">▲▼◄► Browse listings</span>
+    <span style="font: 400 12px 'PT Sans', sans-serif; color: #ffffff; text-shadow: 0 1px 1px rgba(0,0,0,0.5);">Press OK/Select to tune — INFO for details</span>
+  </div>
+</div>
+</sc-if>
+
+<!-- ═══════ LISTINGS BY CHANNEL ═══════ -->
+<sc-if value="{{ isScreen_bychannel }}" hint-placeholder-val="{{ false }}">
+<div style="width: 100%; height: calc(100vh - 70px); background: linear-gradient(180deg, #1c2c74 0%, #101c54 40%, #0a1440 100%); display: flex; flex-direction: column;">
+  <div style="display: flex; align-items: stretch; height: 132px;">
+    <div style="flex: 1; background: linear-gradient(180deg, #8a78c8 0%, #6a55b0 55%, #503f98 100%); border-right: 2px solid #0a1440; display: flex; flex-direction: column;">
+      <div style="background: linear-gradient(180deg, #6a8ad8 0%, #4a68c0 50%, #3a55b0 100%); padding: 4px 14px; border-bottom: 1px solid #2a3a80;">
+        <span style="font: 700 14px 'PT Sans', sans-serif; color: #ffffff; text-shadow: 0 1px 1px rgba(0,0,0,0.5);">{{ chanSelInfo.title }}</span>
+      </div>
+      <div style="padding: 8px 14px; flex: 1; overflow: hidden;">
+        <div style="font: 400 12px 'PT Sans', sans-serif; color: #e8e2f8;">{{ chanSelInfo.time }}</div>
+        <div style="font: 400 12px 'PT Sans', sans-serif; color: #ffffff; line-height: 1.4; margin-top: 4px; text-shadow: 0 1px 1px rgba(0,0,0,0.4);">{{ chanSelInfo.desc }}</div>
+      </div>
+    </div>
+    <div style="width: 236px; background: linear-gradient(135deg, #3a4a66 0%, #1c2840 70%, #141c30 100%); border-bottom: 2px solid #0a1440; display: flex; align-items: center; justify-content: center;">
+      <span style="font: 400 12px monospace; color: #56668a;">live preview</span>
+    </div>
+  </div>
+  <div style="display: flex; align-items: center; justify-content: space-between; background: linear-gradient(180deg, #101838 0%, #0a1230 100%); border-top: 1px solid #2a4080; border-bottom: 1px solid #000818; padding: 4px 14px;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="font: 700 11px 'PT Sans', sans-serif; color: #f8e030;">▸</span>
+      <span style="font: 700 13px 'PT Sans', sans-serif; color: #ffffff; text-shadow: 0 1px 1px rgba(0,0,0,0.5);">Listings By Channel</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; background: #000614; padding: 2px 10px; border: 1px solid #1e2c60;">
+      <span style="font: 700 12px 'PT Sans', sans-serif; color: #f8e030; cursor: pointer;">◄</span>
+      <span style="font: 700 12px 'PT Sans', sans-serif; color: #ffffff;">5 CTV</span>
+      <span style="font: 700 12px 'PT Sans', sans-serif; color: #f8e030; cursor: pointer;">►</span>
+    </div>
+  </div>
+  <div style="flex: 1; overflow-y: auto;">
+    <sc-for list="{{ channelListings }}" as="cl">
+      {{ cl.el }}
+    </sc-for>
+  </div>
+  <div style="background: linear-gradient(180deg, #4a6ab8 0%, #35519c 50%, #2a4488 100%); border-top: 1px solid #7a9ae0; padding: 5px 16px;">
+    <span style="font: 400 12px 'PT Sans', sans-serif; color: #ffffff; text-shadow: 0 1px 1px rgba(0,0,0,0.5);">▲▼ Browse — ◄► Change channel — OK/Select to tune</span>
+  </div>
+</div>
+</sc-if>
+
+<!-- ═══════ FLIP BAR ═══════ -->
+<sc-if value="{{ isScreen_flipbar }}" hint-placeholder-val="{{ false }}">
+<div style="width: 100%; height: calc(100vh - 26px); background: linear-gradient(160deg, #3a4a66 0%, #202c44 55%, #141c30 100%); position: relative; display: flex; flex-direction: column; justify-content: flex-end;">
+  <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
+    <span style="font: 400 15px monospace; color: #56668a;">live tv — active stream</span>
+  </div>
+  <div style="position: relative; z-index: 5; animation: slide-up 200ms ease-out; padding-bottom: 30px;">
+    <div style="height: 40px; background: linear-gradient(180deg, rgba(10,20,64,0) 0%, rgba(10,20,64,0.6) 100%);"></div>
+    <div style="display: flex; align-items: center; justify-content: space-between; background: linear-gradient(180deg, rgba(138,120,204,0.96) 0%, rgba(106,85,180,0.96) 48%, rgba(86,67,156,0.96) 100%); border-top: 1px solid #b0a0e0; padding: 5px 18px;">
+      <span style="font: 700 15px 'PT Sans', sans-serif; color: #f8e030; text-shadow: 0 1px 1px rgba(0,0,0,0.5);">The Big Bang Theory</span>
+      <div style="display: flex; gap: 14px; align-items: center;">
+        <span style="font: 700 13px 'PT Sans', sans-serif; color: #ffffff; text-shadow: 0 1px 1px rgba(0,0,0,0.5);">5 CTV</span>
+        <span style="font: 700 13px 'PT Sans', sans-serif; color: #ffffff; text-shadow: 0 1px 1px rgba(0,0,0,0.5);">8-8:30p</span>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: space-between; background: linear-gradient(180deg, rgba(114,136,192,0.94) 0%, rgba(84,104,156,0.94) 100%); border-top: 1px solid #98acd8; border-bottom: 2px solid #0a1440; padding: 5px 18px;">
+      <span style="font: 400 12px 'PT Sans', sans-serif; color: #ffffff; text-shadow: 0 1px 1px rgba(0,0,0,0.4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">"The Meteorite Manifestation", (2019), Sheldon and Amy argue about their Nobel Prize money. Included...</span>
+      <span style="font: 700 11px 'PT Sans', sans-serif; color: #d8e0f4; margin-left: 12px;">HD ⚄</span>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<!-- ═══════ MINI GUIDE ═══════ -->
+<sc-if value="{{ isScreen_miniguide }}" hint-placeholder-val="{{ false }}">
+<div style="width: 100%; height: calc(100vh - 26px); background: linear-gradient(160deg, #3a4a66 0%, #202c44 55%, #141c30 100%); position: relative; display: flex; flex-direction: column; justify-content: flex-end;">
+  <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
+    <span style="font: 400 15px monospace; color: #56668a;">live tv — active stream</span>
+  </div>
+  <div style="position: relative; z-index: 5; animation: slide-up 200ms ease-out;">
+    <div style="height: 40px; background: linear-gradient(180deg, rgba(10,20,64,0) 0%, rgba(10,20,64,0.6) 100%);"></div>
+    <div style="display: flex; align-items: stretch; background: linear-gradient(180deg, rgba(16,24,56,0.95) 0%, rgba(10,18,48,0.95) 100%); border-top: 1px solid #2a4080; height: 24px;">
+      <div style="width: 74px; display: flex; align-items: center; gap: 6px; padding-left: 10px;">
+        <span style="font: 700 11px 'PT Sans', sans-serif; color: #f8e030;">▸</span>
+      </div>
+      <sc-for list="{{ miniGuideTimeSlots }}" as="mts">
+        <div style="flex: 1; display: flex; align-items: center; padding-left: 8px; border-left: 1px solid #1e2c60;">
+          <span style="font: 700 12px 'PT Sans', sans-serif; color: #ffffff; text-shadow: 0 1px 1px rgba(0,0,0,0.5);">{{ mts }}</span>
+        </div>
+      </sc-for>
+    </div>
+    <sc-for list="{{ miniGuideRows }}" as="mgr">
+      {{ mgr.el }}
+    </sc-for>
+    <div style="background: linear-gradient(180deg, rgba(74,106,184,0.95) 0%, rgba(42,68,136,0.95) 100%); border-top: 1px solid #7a9ae0; border-bottom: 2px solid #0a1440; padding: 4px 16px;">
+      <span style="font: 400 12px 'PT Sans', sans-serif; color: #ffffff; text-shadow: 0 1px 1px rgba(0,0,0,0.5);">▲▼ Browse — OK/Select to tune — EXIT to close</span>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<!-- ═══════ PROGRAM INFORMATION ═══════ -->
+<sc-if value="{{ isScreen_programinfo }}" hint-placeholder-val="{{ false }}">
+<div style="width: 100%; height: calc(100vh - 70px); background: linear-gradient(180deg, #1c2c74 0%, #101c54 40%, #0a1440 100%); display: flex; flex-direction: column;">
+  <div style="display: flex; align-items: stretch; height: 132px;">
+    <div style="flex: 1; background: linear-gradient(180deg, #8a78c8 0%, #6a55b0 55%, #503f98 100%); border-right: 2px solid #0a1440; display: flex; flex-direction: column;">
+      <div style="background: linear-gradient(180deg, #6a8ad8 0%, #4a68c0 50%, #3a55b0 100%); padding: 5px 14px; border-bottom: 1px solid #2a3a80;">
+        <span style="font: 700 15px 'PT Sans', sans-serif; color: #ffffff; text-shadow: 0 1px 1px rgba(0,0,0,0.5);">The Big Bang Theory</span>
+      </div>
+      <div style="padding: 8px 14px; flex: 1; display: flex; flex-direction: column; gap: 3px;">
+        <span style="font: 400 13px 'PT Sans', sans-serif; color: #ffffff; text-shadow: 0 1px 1px rgba(0,0,0,0.4);">8-8:30p</span>
+        <span style="font: 400 13px 'PT Sans', sans-serif; color: #ffffff; text-shadow: 0 1px 1px rgba(0,0,0,0.4);">5 CTV</span>
+        <span style="font: 400 12px 'PT Sans', sans-serif; color: #d8d0f0;">TV-PG — HD</span>
+      </div>
+    </div>
+    <div style="width: 236px; background: linear-gradient(135deg, #3a4a66 0%, #1c2840 70%, #141c30 100%); border-bottom: 2px solid #0a1440; display: flex; align-items: center; justify-content: center;">
+      <span style="font: 400 12px monospace; color: #56668a;">live preview</span>
+    </div>
+  </div>
+  <div style="flex: 1; padding: 14px 20px; overflow-y: auto;">
+    <div style="font: 400 14px 'PT Sans', sans-serif; color: #ffffff; line-height: 1.5; text-shadow: 0 1px 1px rgba(0,0,0,0.4); max-width: 620px;">"The Meteorite Manifestation", New, (2019), Sheldon and Amy argue about the best way to use their Nobel Prize money. Howard discovers Bernadette has been keeping a big secret; Raj considers proposing to Anu. (Comedy)</div>
+    <div style="font: 400 12px 'PT Sans', sans-serif; color: #b8c4e8; margin-top: 10px;">Jellyfin: 12 seasons — 264 episodes — 23 unwatched</div>
+  </div>
+  <div style="display: flex; gap: 10px; align-items: center; justify-content: flex-start; padding: 8px 20px; background: linear-gradient(180deg, rgba(20,32,84,0.6) 0%, rgba(12,20,60,0.6) 100%); border-top: 1px solid #2a4080;">
+    <sc-for list="{{ actionIcons }}" as="ai">
+      {{ ai.el }}
+    </sc-for>
+  </div>
+  <div style="background: linear-gradient(180deg, #4a6ab8 0%, #35519c 50%, #2a4488 100%); border-top: 1px solid #7a9ae0; padding: 5px 16px;">
+    <span style="font: 400 13px 'PT Sans', sans-serif; color: #ffffff; text-shadow: 0 1px 1px rgba(0,0,0,0.5);">{{ actionFocusLabel }}</span>
+  </div>
+</div>
+</sc-if>
+
+<!-- ═══════ FAVOURITES ═══════ -->
+<sc-if value="{{ isScreen_favourites }}" hint-placeholder-val="{{ false }}">
+<div style="width: 100%; height: calc(100vh - 70px); background: linear-gradient(180deg, #1c2c74 0%, #101c54 40%, #0a1440 100%); display: flex; flex-direction: column;">
+  <div style="display: flex; align-items: stretch; height: 132px;">
+    <div style="flex: 1; background: linear-gradient(180deg, #8a78c8 0%, #6a55b0 55%, #503f98 100%); border-right: 2px solid #0a1440; display: flex; flex-direction: column;">
+      <div style="background: linear-gradient(180deg, #6a8ad8 0%, #4a68c0 50%, #3a55b0 100%); padding: 4px 14px; border-bottom: 1px solid #2a3a80;">
+        <span style="font: 700 14px 'PT Sans', sans-serif; color: #ffffff; text-shadow: 0 1px 1px rgba(0,0,0,0.5);">{{ favSelInfo.title }}</span>
+      </div>
+      <div style="padding: 8px 14px; flex: 1;">
+        <div style="font: 400 12px 'PT Sans', sans-serif; color: #e8e2f8;">{{ favSelInfo.time }}</div>
+        <div style="font: 400 12px 'PT Sans', sans-serif; color: #ffffff; line-height: 1.4; margin-top: 4px; text-shadow: 0 1px 1px rgba(0,0,0,0.4);">{{ favSelInfo.desc }}</div>
+      </div>
+    </div>
+    <div style="width: 236px; background: linear-gradient(135deg, #3a4a66 0%, #1c2840 70%, #141c30 100%); border-bottom: 2px solid #0a1440; display: flex; align-items: center; justify-content: center;">
+      <span style="font: 400 12px monospace; color: #56668a;">live preview</span>
+    </div>
+  </div>
+  <div style="display: flex; align-items: center; justify-content: space-between; background: linear-gradient(180deg, #101838 0%, #0a1230 100%); border-top: 1px solid #2a4080; border-bottom: 1px solid #000818; padding: 4px 14px;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="font: 700 11px 'PT Sans', sans-serif; color: #f8e030;">▸</span>
+      <span style="font: 700 13px 'PT Sans', sans-serif; color: #ffffff; text-shadow: 0 1px 1px rgba(0,0,0,0.5);">Favourites</span>
+    </div>
+    <div style="display: flex; gap: 4px;">
+      <sc-for list="{{ favTabs }}" as="ft">
+        {{ ft.el }}
+      </sc-for>
+    </div>
+  </div>
+  <div style="flex: 1; overflow-y: auto;">
+    <sc-for list="{{ favouriteChannels }}" as="fav">
+      {{ fav.el }}
+    </sc-for>
+  </div>
+  <div style="background: linear-gradient(180deg, #4a6ab8 0%, #35519c 50%, #2a4488 100%); border-top: 1px solid #7a9ae0; padding: 5px 16px;">
+    <span style="font: 400 12px 'PT Sans', sans-serif; color: #ffffff; text-shadow: 0 1px 1px rgba(0,0,0,0.5);">▲▼ Browse — OK/Select to tune — FAV to remove from list</span>
+  </div>
+</div>
+</sc-if>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: &quot;1280px&quot;, &quot;height&quot;: &quot;720px&quot;}, &quot;activeScreen&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;quickmenu&quot;, &quot;options&quot;: [&quot;quickmenu&quot;, &quot;mainmenu&quot;, &quot;bytime&quot;, &quot;bychannel&quot;, &quot;flipbar&quot;, &quot;miniguide&quot;, &quot;programinfo&quot;, &quot;favourites&quot;]}}">
+
+class Component extends DCLogic {
+  state = {
+    activeScreen: 'quickmenu',
+    activeFavTab: 0,
+    qmFocus: 0,
+    actionFocus: 2,
+    selCell: { ch: '5', idx: 0 },
+    selRow: 7,
+    selFav: 0,
+    selMenu: 0
+  };
+
+  renderVals() {
+    const s = this.state;
+    const h = React.createElement;
+    const p = (d) => h('path', { d });
+    const now = new Date();
+    const currentTime = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase().replace(' ', '');
+
+    const F = "'PT Sans', 'Trebuchet MS', Tahoma, sans-serif";
+    const TS = '0 1px 1px rgba(0,0,0,0.5)';
+    const YELLOW_BG = 'linear-gradient(180deg, #fff268 0%, #f8dc28 45%, #e6c112 55%, #f0cc1e 100%)';
+    const CELL_BG = 'linear-gradient(180deg, #5a76c8 0%, #3d59ac 48%, #33509e 52%, #3a55a8 100%)';
+    const CHAN_BG = 'linear-gradient(180deg, #4a63b4 0%, #32499c 50%, #2a4090 100%)';
+    const goScreen = (id) => () => this.setState({ activeScreen: id });
+
+    const screens = [
+      { id: 'quickmenu', label: 'Quick Menu' }, { id: 'mainmenu', label: 'Main Menu' },
+      { id: 'bytime', label: 'By Time' }, { id: 'bychannel', label: 'By Channel' },
+      { id: 'flipbar', label: 'Flip Bar' }, { id: 'miniguide', label: 'Mini Guide' },
+      { id: 'programinfo', label: 'Program Info' }, { id: 'favourites', label: 'Favourites' }
+    ];
+    const screenTabs = screens.map(sc => {
+      const active = sc.id === s.activeScreen;
+      return { el: h('div', {
+        onClick: goScreen(sc.id),
+        style: { padding: '3px 10px', cursor: 'pointer', font: `700 10px ${F}`, letterSpacing: 0.3, color: active ? '#f8e030' : '#3a5080', background: active ? 'rgba(248,224,48,0.1)' : 'transparent', textTransform: 'uppercase' }
+      }, sc.label) };
+    });
+
+    // ── Quick Menu: glossy rounded-square tiles ──
+    const qmDefs = [
+      { glyph: 'home', label: 'Main Menu', desc: 'Browse all guide features' },
+      { text: 'DVR', label: 'DVR', desc: 'View and manage recordings' },
+      { glyph: 'film', label: 'Jellyfin', desc: 'Browse your Jellyfin library' },
+      { text: 'HD', label: 'HDTV', desc: 'Jump to HD channels' },
+      { glyph: 'heart', label: 'Favourites', desc: 'View your favourite channels' },
+      { glyph: 'search', label: 'Search', desc: 'Find shows by title' },
+      { glyph: 'movie', label: 'Movies', desc: 'Browse movie listings' },
+      { glyph: 'kid', label: 'Kids', desc: 'Kids programs and channels' },
+      { glyph: 'ball', label: 'Sports', desc: 'Sports listings and scores' },
+      { glyph: 'lock', label: 'Settings', desc: 'Guide setup and preferences' }
+    ];
+    const glyphSvg = (name, size = 18) => {
+      const paths = {
+        home: [p('M3 11l9-8 9 8'), p('M5 10v10h14V10')],
+        film: [p('M4 4h16v12H4z'), p('M8 20h8M12 16v4')],
+        heart: [p('M12 21C12 21 4 14.5 4 9.5C4 5.36 7.58 3 12 3c4.42 0 8 2.36 8 6.5C20 14.5 12 21 12 21z')],
+        search: [h('circle', { cx: 10, cy: 10, r: 6 }), p('M21 21l-4.35-4.35')],
+        movie: [p('M4 4l4 4m0-4L4 8M7 4h13v16H4V8M4 8h16')],
+        kid: [h('circle', { cx: 12, cy: 8, r: 4 }), p('M5 20c0-3.87 3.13-7 7-7s7 3.13 7 7')],
+        ball: [h('circle', { cx: 12, cy: 12, r: 9 }), p('M12 3v18M3 12h18')],
+        lock: [p('M6 11V8a6 6 0 0 1 12 0v3'), p('M4 11h16v9H4z')],
+        clock: [h('circle', { cx: 12, cy: 12, r: 9 }), p('M12 7v5l3.5 2')],
+        eye: [p('M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z'), h('circle', { cx: 12, cy: 12, r: 3 })],
+        back: [p('M9 14L4 9l5-5'), p('M4 9h11a5 5 0 0 1 0 10h-4')],
+        rec: [h('circle', { cx: 12, cy: 12, r: 7, fill: '#e02020', stroke: '#e02020' })],
+        bell: [p('M18 16v-5a6 6 0 1 0-12 0v5l-2 2h16z'), p('M10 20a2 2 0 0 0 4 0')]
+      };
+      return h('svg', { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: '#ffffff', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round', style: { filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.5))' } }, ...(paths[name] || []));
+    };
+    const quickMenuItems = qmDefs.map((q, i) => {
+      const focused = i === s.qmFocus;
+      return { el: h('div', {
+        tabIndex: 0,
+        onFocus: () => this.setState({ qmFocus: i }),
+        onMouseEnter: () => this.setState({ qmFocus: i }),
+        onClick: () => {
+          if (q.label === 'Main Menu') this.setState({ activeScreen: 'mainmenu' });
+          else if (q.label === 'Favourites') this.setState({ activeScreen: 'favourites' });
+          else if (q.label === 'Movies' || q.label === 'Jellyfin') this.setState({ activeScreen: 'programinfo' });
+          else if (q.label === 'Sports') this.setState({ activeScreen: 'bytime' });
+        },
+        style: {
+          width: 44, height: 38, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', outline: 'none',
+          background: 'linear-gradient(180deg, #7a9ae0 0%, #4a68b8 48%, #3a55a4 52%, #4260b0 100%)',
+          border: focused ? '2px solid #f8e030' : '2px solid #2a4088',
+          boxShadow: focused ? '0 0 8px rgba(248,224,48,0.7), inset 0 1px 0 rgba(255,255,255,0.35)' : 'inset 0 1px 0 rgba(255,255,255,0.35), 0 1px 3px rgba(0,0,0,0.4)'
+        }
+      }, q.text ? h('span', { style: { font: `700 12px ${F}`, color: '#fff', textShadow: TS } }, q.text) : glyphSvg(q.glyph)) };
+    });
+    const qmFocusLabel = `${qmDefs[s.qmFocus].label} - ${qmDefs[s.qmFocus].desc}`;
+
+    // ── Channels & guide data ──
+    const channels = [
+      { num: '2', call: 'CBC', cat: 'regular' }, { num: '5', call: 'CTV', cat: 'regular' },
+      { num: '7', call: 'GBL', cat: 'regular' }, { num: '12', call: 'TSN', cat: 'sports' },
+      { num: '14', call: 'SN', cat: 'sports' }, { num: '20', call: 'YTV', cat: 'kids' },
+      { num: '22', call: 'TREE', cat: 'kids' }, { num: '25', call: 'TMN', cat: 'movies' },
+      { num: '30', call: 'CRV', cat: 'movies' }, { num: '40', call: 'DISC', cat: 'regular' },
+      { num: '45', call: 'FOOD', cat: 'regular' }
+    ];
+    const catCellBg = {
+      regular: CELL_BG,
+      movies: 'linear-gradient(180deg, #8a6cc8 0%, #6a4cac 48%, #5c429e 52%, #6448a4 100%)',
+      sports: 'linear-gradient(180deg, #4c9868 0%, #35784c 48%, #2e6c44 52%, #337249 100%)',
+      kids: 'linear-gradient(180deg, #64a0d8 0%, #4680bc 48%, #3c74b0 52%, #427ab4 100%)'
+    };
+    const programData = {
+      '2': [{ title: 'The National', time: '8-9p', span: 2, desc: 'Current national news and analysis. (News)' }, { title: 'Marketplace', time: '9-9:30p', span: 1 }, { title: 'The Fifth Estate', time: '9:30-10p', span: 1 }],
+      '5': [{ title: 'The Big Bang Theory', time: '8-8:30p', span: 1, desc: '"The Meteorite Manifestation", (2019), Sheldon and Amy argue about their Nobel Prize money. (Comedy)' }, { title: 'Young Sheldon', time: '8:30-9p', span: 1 }, { title: 'CTV News', time: '9-10p', span: 2 }],
+      '7': [{ title: 'Survivor', time: '8-9p', span: 2 }, { title: 'Global News Hour', time: '9-10p', span: 2 }],
+      '12': [{ title: 'NHL Hockey: Leafs vs Habs', time: '8-10p', span: 4, desc: 'Toronto Maple Leafs at Montreal Canadiens. Live from Bell Centre. (Sports)' }],
+      '14': [{ title: 'NBA Basketball', time: '8-9:30p', span: 3 }, { title: 'SN Central', time: '9:30-10p', span: 1 }],
+      '20': [{ title: 'SpongeBob', time: '8-8:30p', span: 1 }, { title: 'Fairly OddParents', time: '8:30-9p', span: 1 }, { title: 'Avatar', time: '9-10p', span: 2 }],
+      '22': [{ title: 'Paw Patrol', time: '8-8:30p', span: 1 }, { title: 'Dora', time: '8:30-9p', span: 1 }, { title: 'Peppa Pig', time: '9-9:30p', span: 1 }, { title: "Blue's Clues", time: '9:30-10p', span: 1 }],
+      '25': [{ title: 'The Dark Knight', time: '8-10:30p', span: 4, desc: '(2008), Batman faces the Joker, a criminal mastermind bent on chaos. (Movie)' }],
+      '30': [{ title: 'Succession', time: '8-9p', span: 2 }, { title: 'The Last of Us', time: '9-10p', span: 2 }],
+      '40': [{ title: 'Deadliest Catch', time: '8-9p', span: 2 }, { title: 'Gold Rush', time: '9-10p', span: 2 }],
+      '45': [{ title: 'Chopped', time: '8-9p', span: 2 }, { title: 'Diners, Drive-Ins', time: '9-9:30p', span: 1 }, { title: 'Beat Bobby Flay', time: '9:30-10p', span: 1 }]
+    };
+    const timeSlots = ['8:00p', '8:30p', '9:00p', '9:30p'];
+
+    // selected cell info panel
+    const selCh = channels.find(c => c.num === s.selCell.ch) || channels[1];
+    const selProg = (programData[selCh.num] || [])[s.selCell.idx] || programData['5'][0];
+    const selInfo = {
+      title: selProg.title,
+      chan: `${selCh.num} ${selCh.call}`,
+      time: selProg.time,
+      desc: selProg.desc || `${selProg.title} airs ${selProg.time} on ${selCh.call}.`
+    };
+
+    const rowText = (txt, bold, black) => h('span', { style: { font: `${bold ? 700 : 400} 12px ${F}`, color: black ? '#101000' : '#ffffff', textShadow: black ? 'none' : TS, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, txt);
+
+    const guideRows = channels.map(ch => {
+      const progs = programData[ch.num] || [];
+      const cells = progs.map((pr, i) => {
+        const selected = s.selCell.ch === ch.num && s.selCell.idx === i;
+        return h('div', {
+          key: i, tabIndex: 0,
+          onClick: () => selected ? this.setState({ activeScreen: 'programinfo' }) : this.setState({ selCell: { ch: ch.num, idx: i } }),
+          onFocus: () => this.setState({ selCell: { ch: ch.num, idx: i } }),
+          style: {
+            flex: `${pr.span} 1 0px`, minWidth: 0, display: 'flex', alignItems: 'center', padding: '0 8px', cursor: 'pointer', outline: 'none',
+            background: selected ? YELLOW_BG : catCellBg[ch.cat],
+            borderLeft: '1px solid #16255c', borderBottom: '1px solid #16255c',
+            boxShadow: selected ? 'inset 0 1px 0 rgba(255,255,255,0.5)' : 'inset 0 1px 0 rgba(255,255,255,0.18)'
+          }
+        }, rowText(pr.title, selected, selected));
+      });
+      return { el: h('div', { style: { display: 'flex', alignItems: 'stretch', height: 30 } },
+        h('div', { style: { width: 74, display: 'flex', alignItems: 'center', gap: 5, padding: '0 6px', background: CHAN_BG, borderBottom: '1px solid #16255c', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15)' } },
+          h('span', { style: { font: `700 12px ${F}`, color: '#ffffff', textShadow: TS, minWidth: 18, textAlign: 'right' } }, ch.num),
+          h('span', { style: { font: `400 11px ${F}`, color: '#d0daf4', textShadow: TS } }, ch.call)
+        ),
+        ...cells
+      ) };
+    });
+
+    // ── Listings by Channel ──
+    const chanPrograms = [
+      { time: '6:00a', title: 'CTV Morning Live', desc: 'Local news, weather and traffic to start your day. (News)' },
+      { time: '7:00a', title: 'Your Morning', desc: 'National morning show. (News)' },
+      { time: '8:00a', title: 'The Social', desc: 'Panel discussion on trending topics. (Talk)' },
+      { time: '12:00p', title: 'CTV News at Noon', desc: 'Midday news update. (News)' },
+      { time: '4:00p', title: 'Judge Judy', desc: 'Reality courtroom show. (Reality)' },
+      { time: '5:00p', title: 'CTV News at Five', desc: 'Evening news broadcast. (News)' },
+      { time: '7:00p', title: 'etalk', desc: 'Entertainment news and celebrity interviews. (Entertainment)' },
+      { time: '8:00p', title: 'The Big Bang Theory', desc: '"The Meteorite Manifestation", (2019), Sheldon and Amy argue about their Nobel Prize money. (Comedy)' },
+      { time: '8:30p', title: 'Young Sheldon', desc: 'Sheldon struggles with peer pressure. (Comedy)' },
+      { time: '9:00p', title: 'CTV National News', desc: "The day's top stories. (News)" },
+      { time: '11:00p', title: 'The Late Show', desc: 'Late night talk show. (Talk)' }
+    ];
+    const chanSel = chanPrograms[s.selRow] || chanPrograms[7];
+    const chanSelInfo = { title: chanSel.title, time: chanSel.time, desc: chanSel.desc };
+    const channelListings = chanPrograms.map((cl, i) => {
+      const selected = i === s.selRow;
+      return { el: h('div', {
+        tabIndex: 0,
+        onClick: () => selected ? this.setState({ activeScreen: 'programinfo' }) : this.setState({ selRow: i }),
+        onFocus: () => this.setState({ selRow: i }),
+        style: { display: 'flex', alignItems: 'stretch', height: 28, cursor: 'pointer', outline: 'none' }
+      },
+        h('div', { style: { width: 74, display: 'flex', alignItems: 'center', padding: '0 8px', background: CHAN_BG, borderBottom: '1px solid #16255c', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15)' } },
+          h('span', { style: { font: `700 12px ${F}`, color: '#ffffff', textShadow: TS } }, cl.time)
+        ),
+        h('div', { style: { flex: 1, display: 'flex', alignItems: 'center', padding: '0 10px', minWidth: 0, background: selected ? YELLOW_BG : CELL_BG, borderLeft: '1px solid #16255c', borderBottom: '1px solid #16255c', boxShadow: selected ? 'inset 0 1px 0 rgba(255,255,255,0.5)' : 'inset 0 1px 0 rgba(255,255,255,0.18)' } },
+          rowText(cl.title, selected, selected)
+        )
+      ) };
+    });
+
+    // ── Main Menu rows ──
+    const menuDefs = ['TV Listings by Time', 'TV Listings by Channel', 'Search', 'Jellyfin Library', 'Favourites', 'Recordings (DVR)', 'Music Channels', 'Setup'];
+    const menuTargets = { 'TV Listings by Time': 'bytime', 'TV Listings by Channel': 'bychannel', 'Favourites': 'favourites' };
+    const mainMenuItems = menuDefs.map((label, i) => {
+      const selected = i === s.selMenu;
+      return { el: h('div', {
+        tabIndex: 0,
+        onClick: () => { if (selected && menuTargets[label]) this.setState({ activeScreen: menuTargets[label] }); else this.setState({ selMenu: i }); },
+        onFocus: () => this.setState({ selMenu: i }),
+        style: { display: 'flex', alignItems: 'center', height: 30, padding: '0 16px', cursor: 'pointer', outline: 'none', background: selected ? YELLOW_BG : CELL_BG, borderBottom: '1px solid #16255c', boxShadow: selected ? 'inset 0 1px 0 rgba(255,255,255,0.5)' : 'inset 0 1px 0 rgba(255,255,255,0.18)' }
+      }, h('span', { style: { font: `${selected ? 700 : 400} 13px ${F}`, color: selected ? '#101000' : '#ffffff', textShadow: selected ? 'none' : TS } }, label)) };
+    });
+
+    // ── Mini Guide ──
+    const miniGuideTimeSlots = ['8:00p', '8:30p', '9:00p'];
+    const mgData = [
+      { num: '5', call: 'CTV', cat: 'regular', programs: [{ title: 'The Big Bang Theory', span: 1 }, { title: 'Young Sheldon', span: 1 }, { title: 'CTV News', span: 1 }] },
+      { num: '7', call: 'GBL', cat: 'regular', programs: [{ title: 'Survivor', span: 2 }, { title: 'Global News Hour', span: 1 }] },
+      { num: '12', call: 'TSN', cat: 'sports', programs: [{ title: 'NHL Hockey: Leafs vs Habs', span: 3 }] }
+    ];
+    const miniGuideRows = mgData.map((mgr, ri) => {
+      const cells = mgr.programs.map((mp, i) => {
+        const selected = ri === 0 && i === 0;
+        return h('div', {
+          key: i, tabIndex: 0,
+          style: { flex: `${mp.span} 1 0px`, minWidth: 0, display: 'flex', alignItems: 'center', padding: '0 8px', cursor: 'pointer', outline: 'none', background: selected ? YELLOW_BG : catCellBg[mgr.cat], borderLeft: '1px solid #16255c', borderBottom: '1px solid #16255c', boxShadow: selected ? 'inset 0 1px 0 rgba(255,255,255,0.5)' : 'inset 0 1px 0 rgba(255,255,255,0.18)' }
+        }, rowText(mp.title, selected, selected));
+      });
+      return { el: h('div', { style: { display: 'flex', alignItems: 'stretch', height: 28, opacity: 0.97 } },
+        h('div', { style: { width: 74, display: 'flex', alignItems: 'center', gap: 5, padding: '0 6px', background: CHAN_BG, borderBottom: '1px solid #16255c' } },
+          h('span', { style: { font: `700 12px ${F}`, color: '#ffffff', textShadow: TS, minWidth: 18, textAlign: 'right' } }, mgr.num),
+          h('span', { style: { font: `400 11px ${F}`, color: '#d0daf4' } }, mgr.call)
+        ),
+        ...cells
+      ) };
+    });
+
+    // ── Action icons (Program Info) ──
+    const actionDefs = [
+      { glyph: 'back', label: 'Return to the previous screen' },
+      { glyph: 'rec', label: 'Record this program' },
+      { glyph: 'bell', label: 'Set or Cancel a Reminder' },
+      { glyph: 'clock', label: 'View other show times' },
+      { glyph: 'eye', label: 'Watch this program now' },
+      { glyph: 'heart', label: 'Save channel to Favourites' },
+      { glyph: 'lock', label: 'Lock this channel' }
+    ];
+    const actionIcons = actionDefs.map((a, i) => {
+      const focused = i === s.actionFocus;
+      return { el: h('div', {
+        tabIndex: 0,
+        onFocus: () => this.setState({ actionFocus: i }),
+        onMouseEnter: () => this.setState({ actionFocus: i }),
+        onClick: () => { if (a.glyph === 'back') this.setState({ activeScreen: 'bytime' }); },
+        style: {
+          width: 38, height: 38, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', outline: 'none',
+          background: 'radial-gradient(circle at 35% 28%, #8aa8e8 0%, #4a68b8 55%, #2a4898 100%)',
+          border: focused ? '2px solid #f8e030' : '2px solid #1a3070',
+          boxShadow: focused ? '0 0 10px rgba(248,224,48,0.8)' : '0 1px 3px rgba(0,0,0,0.5)'
+        }
+      }, glyphSvg(a.glyph, 19)) };
+    });
+    const actionFocusLabel = actionDefs[s.actionFocus].label;
+
+    // ── Favourites ──
+    const favTabData = ['All', 'Sports', 'Movies', 'Kids'];
+    const favTabs = favTabData.map((ft, i) => {
+      const active = i === s.activeFavTab;
+      return { el: h('div', {
+        tabIndex: 0,
+        onClick: () => this.setState({ activeFavTab: i, selFav: 0 }),
+        style: { padding: '1px 10px', cursor: 'pointer', font: `700 11px ${F}`, color: active ? '#101000' : '#ffffff', background: active ? YELLOW_BG : '#000614', border: active ? '1px solid #b09000' : '1px solid #1e2c60', textShadow: active ? 'none' : TS }
+      }, ft) };
+    });
+
+    const allFavourites = [
+      { num: '5', call: 'CTV', nowPlaying: 'The Big Bang Theory', time: '8-8:30p', category: 'Regular', desc: '"The Meteorite Manifestation", (2019). (Comedy)' },
+      { num: '12', call: 'TSN', nowPlaying: 'NHL Hockey: Leafs vs Habs', time: '8-10p', category: 'Sports', desc: 'Live from Bell Centre. (Sports)' },
+      { num: '14', call: 'SN', nowPlaying: 'NBA Basketball', time: '8-9:30p', category: 'Sports', desc: 'Raptors at Celtics. (Sports)' },
+      { num: '20', call: 'YTV', nowPlaying: 'SpongeBob SquarePants', time: '8-8:30p', category: 'Kids', desc: 'Animated series. (Kids)' },
+      { num: '25', call: 'TMN', nowPlaying: 'The Dark Knight', time: '8-10:30p', category: 'Movies', desc: '(2008), Batman faces the Joker. (Movie)' },
+      { num: '30', call: 'CRV', nowPlaying: 'Succession', time: '8-9p', category: 'Movies', desc: 'S4E5. (Drama)' },
+      { num: '40', call: 'DISC', nowPlaying: 'Deadliest Catch', time: '8-9p', category: 'Regular', desc: 'Crab fishing in the Bering Sea. (Reality)' },
+      { num: '45', call: 'FOOD', nowPlaying: 'Chopped', time: '8-9p', category: 'Regular', desc: 'Four chefs compete. (Reality)' }
+    ];
+    const catFilter = ['all', 'sports', 'movies', 'kids'][s.activeFavTab] || 'all';
+    const filteredFavs = catFilter === 'all' ? allFavourites : allFavourites.filter(f => f.category.toLowerCase() === catFilter);
+    const favSel = filteredFavs[s.selFav] || filteredFavs[0] || allFavourites[0];
+    const favSelInfo = { title: favSel.nowPlaying, time: `${favSel.time} — ${favSel.num} ${favSel.call}`, desc: favSel.desc };
+    const favouriteChannels = filteredFavs.map((f, i) => {
+      const selected = i === s.selFav;
+      return { el: h('div', {
+        tabIndex: 0,
+        onClick: () => selected ? this.setState({ activeScreen: 'flipbar' }) : this.setState({ selFav: i }),
+        onFocus: () => this.setState({ selFav: i }),
+        style: { display: 'flex', alignItems: 'stretch', height: 28, cursor: 'pointer', outline: 'none' }
+      },
+        h('div', { style: { width: 74, display: 'flex', alignItems: 'center', gap: 5, padding: '0 6px', background: CHAN_BG, borderBottom: '1px solid #16255c', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15)' } },
+          h('span', { style: { font: `700 12px ${F}`, color: '#ffffff', textShadow: TS, minWidth: 18, textAlign: 'right' } }, f.num),
+          h('span', { style: { font: `400 11px ${F}`, color: '#d0daf4' } }, f.call)
+        ),
+        h('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 10px', minWidth: 0, background: selected ? YELLOW_BG : CELL_BG, borderLeft: '1px solid #16255c', borderBottom: '1px solid #16255c', boxShadow: selected ? 'inset 0 1px 0 rgba(255,255,255,0.5)' : 'inset 0 1px 0 rgba(255,255,255,0.18)' } },
+          rowText(f.nowPlaying, selected, selected),
+          h('span', { style: { font: `400 11px ${F}`, color: selected ? '#403800' : '#c8d2f0', marginLeft: 10, flexShrink: 0 } }, f.time)
+        )
+      ) };
+    });
+
+    const headerScreens = ['mainmenu', 'bytime', 'bychannel', 'programinfo', 'favourites'];
+
+    return {
+      currentTime, screenTabs,
+      showHeader: headerScreens.includes(s.activeScreen),
+      isScreen_quickmenu: s.activeScreen === 'quickmenu',
+      isScreen_mainmenu: s.activeScreen === 'mainmenu',
+      isScreen_bytime: s.activeScreen === 'bytime',
+      isScreen_bychannel: s.activeScreen === 'bychannel',
+      isScreen_flipbar: s.activeScreen === 'flipbar',
+      isScreen_miniguide: s.activeScreen === 'miniguide',
+      isScreen_programinfo: s.activeScreen === 'programinfo',
+      isScreen_favourites: s.activeScreen === 'favourites',
+      quickMenuItems, qmFocusLabel,
+      mainMenuItems,
+      timeSlots, guideRows, selInfo,
+      channelListings, chanSelInfo,
+      miniGuideTimeSlots, miniGuideRows,
+      actionIcons, actionFocusLabel,
+      favTabs, favouriteChannels, favSelInfo
+    };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+/* ============================================================
+   i-Guide Style Tokens — Android TV Launcher
+   Extracted from Cogeco i-Guide User's Reference Manual
+   ============================================================ */
+
+:root {
+  /* ── Backgrounds ── */
+  --bg-base:            #0a0e2a;   /* deepest screen background */
+  --bg-guide:           #0f1535;   /* guide grid / listings background */
+  --bg-header:          #1a2456;   /* top header bar */
+  --bg-header-gradient: linear-gradient(180deg, #2a3a7a 0%, #1a2456 100%);
+  --bg-menu:            #111940;   /* main menu / overlay panels */
+  --bg-cell:            #162050;   /* default grid cell */
+  --bg-cell-alt:        #1c2a60;   /* alternating row tint */
+  --bg-overlay:         rgba(8, 12, 38, 0.92); /* semi-transparent overlays */
+  --bg-flipbar:         rgba(10, 14, 42, 0.95);
+  --bg-info-panel:      #0d1230;   /* program info screen */
+  --bg-input:           #1a2050;   /* text fields, search boxes */
+
+  /* ── Program Category Color Coding ── */
+  --cat-regular:        #3366cc;   /* blue — regular programming */
+  --cat-movies:         #7b3fa0;   /* purple — movies */
+  --cat-sports:         #2d8a4e;   /* green — sports */
+  --cat-kids:           #5bb8d4;   /* light blue — kids */
+  --cat-music:          #c4578a;   /* pink — music channels */
+  --cat-news:           #cc6633;   /* orange — news (extended) */
+  --cat-recorded:       #8b4513;   /* brown — DVR/recorded */
+
+  /* ── Selection / Focus ── */
+  --focus-yellow:       #f5c518;   /* THE yellow highlight — all focus states */
+  --focus-yellow-dim:   #c9a200;   /* pressed / secondary yellow */
+  --focus-glow:         rgba(245, 197, 24, 0.25); /* outer glow on focus */
+  --focus-text:         #0a0e2a;   /* text inside yellow highlight */
+
+  /* ── Action Icon Colors ── */
+  --icon-reminder:      #e8c840;   /* clock / reminder */
+  --icon-record:        #d03030;   /* record (red dot) */
+  --icon-lock:          #e8c840;   /* lock / parental */
+  --icon-favourite:     #e84080;   /* heart / favourite */
+  --icon-watch:         #40b060;   /* play / watch */
+  --icon-back:          #8090b0;   /* back arrow */
+  --icon-info:          #5bb8d4;   /* info button */
+
+  /* ── Quick Menu Icon Backgrounds ── */
+  --qm-main-menu:      #3366cc;
+  --qm-dvr:            #cc3333;
+  --qm-on-demand:      #cc6633;
+  --qm-hdtv:           #2d8a4e;
+  --qm-favourites:     #e84080;
+  --qm-search:         #5bb8d4;
+  --qm-movies:         #7b3fa0;
+  --qm-kids:           #5bb8d4;
+  --qm-sports:         #2d8a4e;
+  --qm-parental:       #e8c840;
+
+  /* ── Text Colors ── */
+  --text-primary:       #ffffff;
+  --text-secondary:     #b0b8d0;
+  --text-muted:         #6a7494;
+  --text-channel:       #e0e4f0;   /* channel numbers / call letters */
+  --text-time:          #c0c8e0;   /* time header text */
+  --text-description:   #9098b8;   /* program description body */
+  --text-link:          #5bb8d4;   /* interactive text links */
+
+  /* ── Borders & Dividers ── */
+  --border-grid:        #1e2a5a;   /* grid cell borders */
+  --border-subtle:      #1a2250;   /* faint dividers */
+  --border-focus:       #f5c518;   /* focus ring */
+  --border-header:      #2a3a7a;   /* header bottom edge */
+
+  /* ── Spacing Scale ── */
+  --sp-1:               4px;
+  --sp-2:               8px;
+  --sp-3:               12px;
+  --sp-4:               16px;
+  --sp-5:               20px;
+  --sp-6:               24px;
+  --sp-8:               32px;
+  --sp-10:              40px;
+  --sp-12:              48px;
+
+  /* ── Grid Dimensions (720p / 1080p target) ── */
+  --grid-row-height:    48px;      /* single-height listing row */
+  --grid-row-height-2x: 96px;      /* double-height (mini guide) */
+  --grid-channel-col:   160px;     /* channel number + call letters column */
+  --grid-time-col:      200px;     /* 30-min time slot column width */
+  --grid-header-height: 56px;      /* top bar with time / branding */
+  --grid-cell-padding:  8px 12px;
+
+  /* ── Quick Menu ── */
+  --qm-icon-size:       64px;
+  --qm-icon-gap:        24px;
+  --qm-bar-height:      96px;
+
+  /* ── Flip Bar ── */
+  --flipbar-height:     120px;
+
+  /* ── Mini Guide ── */
+  --miniguide-rows:     3;         /* 2-3 visible channels */
+
+  /* ── Typography Scale ── */
+  --font-family:        "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  --text-xs:            13px;
+  --text-sm:            15px;
+  --text-base:          17px;
+  --text-lg:            20px;
+  --text-xl:            24px;
+  --text-2xl:           28px;
+  --text-3xl:           36px;
+
+  --weight-normal:      400;
+  --weight-medium:      500;
+  --weight-bold:        700;
+
+  --leading-tight:      1.2;
+  --leading-normal:     1.4;
+  --leading-relaxed:    1.6;
+
+  /* ── Transitions ── */
+  --transition-focus:   120ms ease-out;
+  --transition-slide:   250ms ease-in-out;
+  --transition-fade:    200ms ease;
+
+  /* ── Misc ── */
+  --radius-sm:          3px;
+  --radius-md:          6px;
+  --radius-lg:          12px;
+  --radius-circle:      50%;
+  --shadow-overlay:     0 4px 24px rgba(0,0,0,0.6);
+  --shadow-focus:       0 0 0 3px var(--focus-glow);
+}

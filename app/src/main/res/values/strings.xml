@@ -3,4 +3,39 @@
     <string name="loading_channels">Loading channels…</string>
     <string name="no_channels_available">No channels available</string>
     <string name="hd_badge">HD</string>
+
+    <!-- Branding -->
+    <string name="brand_line_1">DIGITAL</string>
+    <string name="brand_line_2">CABLE</string>
+    <string name="brand_badge">tv</string>
+
+    <!-- Screen titles -->
+    <string name="title_quick_menu">Quick Menu</string>
+    <string name="title_main_menu">Main Menu</string>
+    <string name="title_listings_by_time">TV Listings by Time</string>
+    <string name="title_listings_by_channel">Listings By Channel</string>
+    <string name="title_favourites">Favourites</string>
+    <string name="title_program_info">Program Information</string>
+    <string name="title_menu">Menu</string>
+
+    <!-- Footer hints -->
+    <string name="hint_main_menu">Press ▲▼ to browse, then press OK/Select</string>
+    <string name="hint_by_time_left">▲▼◄► Browse listings</string>
+    <string name="hint_by_time_right">Press OK/Select for details — INFO to tune</string>
+    <string name="hint_by_channel">▲▼ Browse — ◄► Change channel — OK/Select to tune</string>
+    <string name="hint_favourites">▲▼ Browse — OK/Select to tune — FAV to remove from list</string>
+    <string name="hint_mini_guide">▲▼ Browse — OK/Select to tune — EXIT to close</string>
+
+    <!-- Main menu description -->
+    <string name="main_menu_blurb">Browse the program guide, search your Jellyfin library, and manage favourites and recordings — all in one place.</string>
+
+    <!-- Misc -->
+    <string name="live_preview">live preview</string>
+    <string name="no_information">No Information Available</string>
+    <string name="loading_guide">Loading guide…</string>
+    <string name="not_available_yet">Not available yet</string>
+    <string name="now_playing_fmt">%1$s — CH %2$s now playing</string>
+    <string name="added_to_favourites">Added to Favourites</string>
+    <string name="removed_from_favourites">Removed from Favourites</string>
+    <string name="no_favourites">No favourite channels yet — press FAV on a channel to add one</string>
 </resources>

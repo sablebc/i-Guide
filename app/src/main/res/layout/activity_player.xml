@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Live video sits at the bottom of the stack. Full-screen guide pages go into
+  screen_container above it; while one is showing, PlayerActivity scales the PlayerView
+  into that page's preview slot and raises it back above the guide. Bottom overlays
+  (flip bar, mini guide, quick menu) live in overlay_container.
+-->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/player_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/ig_base_navy">
@@ -13,10 +20,35 @@
         app:use_controller="false"
         app:resize_mode="fit" />
 
-    <com.kmsma.i_guide.FlipBarView
-        android:id="@+id/flip_bar"
+    <FrameLayout
+        android:id="@+id/screen_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom" />
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <FrameLayout
+        android:id="@+id/overlay_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.kmsma.i_guide.MiniGuideView
+            android:id="@+id/mini_guide"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom" />
+
+        <com.kmsma.i_guide.QuickMenuView
+            android:id="@+id/quick_menu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom" />
+
+        <com.kmsma.i_guide.FlipBarView
+            android:id="@+id/flip_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom" />
+
+    </FrameLayout>
 
 </FrameLayout>
