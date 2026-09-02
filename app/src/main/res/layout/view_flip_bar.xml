@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <!-- Fade gradient blending the live video into the top bar -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        android:background="@drawable/flip_bar_fade" />
+
+    <!-- Top bar: program title (left) + channel number/call sign + time range (right) -->
+    <LinearLayout
+        android:id="@+id/flip_bar_top"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/flip_bar_top_gradient"
+        android:orientation="horizontal"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/flip_bar_program_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="sans-serif"
+            android:textStyle="bold"
+            android:textColor="@color/ig_yellow_accent"
+            android:textSize="22sp"
+            android:singleLine="true"
+            android:ellipsize="end"
+            tools:text="Adult Swim" />
+
+        <TextView
+            android:id="@+id/flip_bar_channel_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:fontFamily="sans-serif"
+            android:textColor="@color/ig_white"
+            android:textSize="18sp"
+            android:singleLine="true"
+            tools:text="007 ASWIM" />
+    </LinearLayout>
+
+    <!-- Bottom bar: program description (left) + HD badge (right) -->
+    <LinearLayout
+        android:id="@+id/flip_bar_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/flip_bar_bottom_gradient"
+        android:orientation="horizontal"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="20dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/flip_bar_program_description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="sans-serif"
+            android:textColor="@color/ig_white"
+            android:textSize="16sp"
+            android:singleLine="true"
+            android:ellipsize="end"
+            tools:text="Now playing" />
+
+        <TextView
+            android:id="@+id/flip_bar_hd_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:fontFamily="sans-serif"
+            android:textStyle="bold"
+            android:textColor="@color/ig_white"
+            android:textSize="14sp"
+            android:text="@string/hd_badge"
+            android:visibility="gone" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Fullscreen, no title bar, dark background — TV app theme, D-pad only. -->
+    <style name="Theme.IGuide" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowBackground">@color/ig_base_navy</item>
+        <item name="android:colorBackground">@color/ig_base_navy</item>
+        <item name="colorPrimary">@color/ig_header_2</item>
+        <item name="colorPrimaryDark">@color/ig_base_navy</item>
+        <item name="colorAccent">@color/ig_yellow_accent</item>
+    </style>
+</resources>

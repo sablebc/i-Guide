@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base -->
+    <color name="ig_base_navy">#0a1440</color>
+
+    <!-- Header gradient -->
+    <color name="ig_header_1">#7aa0dc</color>
+    <color name="ig_header_2">#4a74c0</color>
+    <color name="ig_header_3">#2f54a0</color>
+    <color name="ig_header_4">#3a60b0</color>
+
+    <!-- Purple info panel -->
+    <color name="ig_purple_panel_1">#8a78c8</color>
+    <color name="ig_purple_panel_2">#6a55b0</color>
+    <color name="ig_purple_panel_3">#503f98</color>
+
+    <!-- Light-blue title bar -->
+    <color name="ig_title_bar_1">#6a8ad8</color>
+    <color name="ig_title_bar_2">#4a68c0</color>
+    <color name="ig_title_bar_3">#3a55b0</color>
+
+    <!-- Section / menu dark bar -->
+    <color name="ig_section_bar_1">#101838</color>
+    <color name="ig_section_bar_2">#0a1230</color>
+
+    <!-- Regular channel cell -->
+    <color name="ig_channel_cell_1">#5a76c8</color>
+    <color name="ig_channel_cell_2">#3d59ac</color>
+    <color name="ig_channel_cell_3">#33509e</color>
+    <color name="ig_channel_cell_4">#3a55a8</color>
+
+    <!-- Channel number cell -->
+    <color name="ig_channel_number_1">#4a63b4</color>
+    <color name="ig_channel_number_2">#32499c</color>
+    <color name="ig_channel_number_3">#2a4090</color>
+
+    <!-- Movies category -->
+    <color name="ig_movies_1">#8a6cc8</color>
+    <color name="ig_movies_2">#6a4cac</color>
+    <color name="ig_movies_3">#5c429e</color>
+    <color name="ig_movies_4">#6448a4</color>
+
+    <!-- Sports category -->
+    <color name="ig_sports_1">#4c9868</color>
+    <color name="ig_sports_2">#35784c</color>
+    <color name="ig_sports_3">#2e6c44</color>
+    <color name="ig_sports_4">#337249</color>
+
+    <!-- Kids category -->
+    <color name="ig_kids_1">#64a0d8</color>
+    <color name="ig_kids_2">#4680bc</color>
+    <color name="ig_kids_3">#3c74b0</color>
+    <color name="ig_kids_4">#427ab4</color>
+
+    <!-- Selected / yellow -->
+    <color name="ig_selected_1">#fff268</color>
+    <color name="ig_selected_2">#f8dc28</color>
+    <color name="ig_selected_3">#e6c112</color>
+    <color name="ig_selected_4">#f0cc1e</color>
+    <color name="ig_selected_text">#101000</color>
+
+    <!-- Yellow accent -->
+    <color name="ig_yellow_accent">#f8e030</color>
+
+    <!-- Footer bar -->
+    <color name="ig_footer_1">#4a6ab8</color>
+    <color name="ig_footer_2">#35519c</color>
+    <color name="ig_footer_3">#2a4488</color>
+
+    <!-- Live-TV overlay backdrop -->
+    <color name="ig_live_backdrop_1">#3a4a66</color>
+    <color name="ig_live_backdrop_2">#202c44</color>
+    <color name="ig_live_backdrop_3">#141c30</color>
+
+    <!-- Flip Bar purple -->
+    <color name="ig_flip_bar_purple_1">#8a78cc</color>
+    <color name="ig_flip_bar_purple_2">#6a55b4</color>
+    <color name="ig_flip_bar_purple_3">#56439c</color>
+
+    <!-- Flip Bar steel-blue -->
+    <color name="ig_flip_bar_blue_1">#5a76c8</color>
+    <color name="ig_flip_bar_blue_2">#3d59ac</color>
+    <color name="ig_flip_bar_blue_3">#33509e</color>
+
+    <color name="ig_white">#ffffff</color>
+    <color name="ig_transparent">#00000000</color>
+</resources>

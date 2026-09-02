@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fade above the flip bar, blending the live video into the top gradient bar. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="270"
+        android:startColor="@color/ig_transparent"
+        android:endColor="@color/ig_flip_bar_purple_1" />
+</shape>
