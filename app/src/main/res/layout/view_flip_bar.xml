@@ -38,15 +38,37 @@
             tools:text="Adult Swim" />
 
         <TextView
-            android:id="@+id/flip_bar_channel_info"
+            android:id="@+id/flip_bar_channel_number"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:fontFamily="sans-serif"
+            android:textStyle="bold"
             android:textColor="@color/ig_white"
             android:textSize="18sp"
             android:singleLine="true"
-            tools:text="007 ASWIM" />
+            tools:text="007" />
+
+        <ImageView
+            android:id="@+id/flip_bar_channel_logo"
+            android:layout_width="28dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="8dp"
+            android:scaleType="fitCenter"
+            android:visibility="gone"
+            tools:visibility="visible"
+            tools:src="@drawable/banner" />
+
+        <TextView
+            android:id="@+id/flip_bar_channel_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:fontFamily="sans-serif"
+            android:textColor="@color/ig_white"
+            android:textSize="18sp"
+            android:singleLine="true"
+            tools:text="ASWIM" />
     </LinearLayout>
 
     <!-- Bottom bar: program description (left) + HD badge (right) -->

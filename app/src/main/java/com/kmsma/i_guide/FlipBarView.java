@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -22,10 +23,15 @@ public class FlipBarView extends FrameLayout {
     private static final long AUTO_DISMISS_DELAY_MS = 5000L;
     private static final long ANIM_DURATION_MS = 200L;
 
+    /** Matches the ImageView's fixed width in view_flip_bar.xml. */
+    private static final int LOGO_WIDTH_DP = 28;
+
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable dismissRunnable = this::hide;
 
     private TextView programTitleView;
+    private TextView channelNumberView;
+    private ImageView channelLogoView;
     private TextView channelInfoView;
     private TextView programDescriptionView;
     private TextView hdBadgeView;
@@ -50,6 +56,8 @@ public class FlipBarView extends FrameLayout {
     private void init() {
         LayoutInflater.from(getContext()).inflate(R.layout.view_flip_bar, this, true);
         programTitleView = findViewById(R.id.flip_bar_program_title);
+        channelNumberView = findViewById(R.id.flip_bar_channel_number);
+        channelLogoView = findViewById(R.id.flip_bar_channel_logo);
         channelInfoView = findViewById(R.id.flip_bar_channel_info);
         programDescriptionView = findViewById(R.id.flip_bar_program_description);
         hdBadgeView = findViewById(R.id.flip_bar_hd_badge);
@@ -62,8 +70,8 @@ public class FlipBarView extends FrameLayout {
     public void show(Channel channel, String programDescription, boolean isHd) {
         if (channel != null) {
             programTitleView.setText(channel.getName());
-            String number = String.valueOf(channel.getNumber());
-            channelInfoView.setText(number);
+            channelInfoView.setText(channel.getName());
+            bindChannelHeader(channel);
         }
         programDescriptionView.setText(programDescription);
         hdBadgeView.setVisibility(isHd ? VISIBLE : GONE);
@@ -86,28 +94,35 @@ public class FlipBarView extends FrameLayout {
 
     /**
      * Shows the flip bar for a channel using its EPG entry: program title on the left,
-     * "5 CTV 8-8:30p" on the right, synopsis underneath. Falls back to the channel name
-     * when the guide has nothing for this slot.
+     * "5 [logo] CTV 8-8:30p" on the right, synopsis underneath. Falls back to the
+     * channel name when the guide has nothing for this slot.
      */
     public void show(Channel channel, @Nullable Program program) {
         if (channel == null) {
             return;
         }
-        String channelLabel = channel.getNumber() + " " + channel.getName();
+        bindChannelHeader(channel);
         if (program == null) {
             programTitleView.setText(channel.getName());
-            channelInfoView.setText(channelLabel);
+            channelInfoView.setText(channel.getName());
             programDescriptionView.setText(
                     getContext().getString(R.string.no_information));
             hdBadgeView.setVisibility(GONE);
         } else {
             programTitleView.setText(program.getTitle());
-            channelInfoView.setText(channelLabel + "   " + program.formatTimeRange());
+            channelInfoView.setText(channel.getName() + "   " + program.formatTimeRange());
             programDescriptionView.setText(program.formatSynopsis());
             hdBadgeView.setVisibility(program.isHd() ? VISIBLE : GONE);
         }
         reveal();
         resetAutoDismissTimer();
+    }
+
+    /** Sets the channel number and kicks off the logo load shared by both {@code show} overloads. */
+    private void bindChannelHeader(Channel channel) {
+        channelNumberView.setText(String.valueOf(channel.getNumber()));
+        int targetPx = Math.round(LOGO_WIDTH_DP * getResources().getDisplayMetrics().density);
+        ChannelIconLoader.get(getContext()).load(channelLogoView, channel.getIconUrl(), targetPx);
     }
 
     /** Slides the bar up if it is not already on screen. */
