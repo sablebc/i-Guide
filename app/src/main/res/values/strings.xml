@@ -2,6 +2,7 @@
     <string name="app_name">i-Guide</string>
     <string name="loading_channels">Loading channels…</string>
     <string name="no_channels_available">No channels available</string>
+    <string name="channel_unavailable">Channel unavailable</string>
     <string name="hd_badge">HD</string>
 
     <!-- Branding -->

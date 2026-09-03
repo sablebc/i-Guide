@@ -25,9 +25,10 @@ import java.util.Random;
  *
  * <p>The burst is open-ended by design. {@link #burst()} starts it when a new channel
  * is tuned and it holds — hiding the black frame while the stream buffers — until
- * {@link #settle()} reports that the new picture is on screen, subject to a floor of
- * {@link #MIN_HOLD_MS} so a fast tune still reads as a flip, and a ceiling of
- * {@link #MAX_HOLD_MS} so a stream that never arrives does not leave snow up forever.
+ * {@link #settle()} reports that the new picture is on screen, subject only to a floor
+ * of {@link #MIN_HOLD_MS} so a fast tune still reads as a flip. There is no ceiling: a
+ * stream that never arrives leaves the snow up, which is the caller's cue to do
+ * something about it rather than let the picture quietly stay black underneath.
  */
 public class StaticNoiseView extends View {
 
@@ -40,9 +41,6 @@ public class StaticNoiseView extends View {
 
     /** Shortest a burst can last, so an instant tune still registers as a flip. */
     private static final long MIN_HOLD_MS = 340L;
-
-    /** Longest the snow holds waiting for a picture that may never come. */
-    private static final long MAX_HOLD_MS = 2200L;
 
     /** Fade from full snow back to picture. */
     private static final long FADE_MS = 260L;
@@ -129,8 +127,7 @@ public class StaticNoiseView extends View {
         long now = SystemClock.uptimeMillis();
         long elapsed = now - startedAt;
 
-        if (fadeStartedAt == 0L
-                && ((settled && elapsed >= MIN_HOLD_MS) || elapsed >= MAX_HOLD_MS)) {
+        if (fadeStartedAt == 0L && settled && elapsed >= MIN_HOLD_MS) {
             fadeStartedAt = now;
         }
 

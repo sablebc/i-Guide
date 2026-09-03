@@ -2,6 +2,8 @@ package com.kmsma.i_guide;
 
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.PlayerView;
@@ -51,10 +54,23 @@ public class PlayerActivity extends AppCompatActivity
 
     private FavouritesStore favourites;
 
+    /** How many times a single tune will retry a stream that ExoPlayer reports as failed. */
+    private static final int MAX_PLAYBACK_ATTEMPTS = 3;
+    private static final long PLAYBACK_RETRY_DELAY_MS = 2000L;
+
+    private final Handler retryHandler = new Handler(Looper.getMainLooper());
+
     @Nullable
     private ExoPlayer player;
     @Nullable
     private Channel tunedChannel;
+    /** What was tuned before the current channel, so a dead stream can fall back to it. */
+    @Nullable
+    private Channel previousChannel;
+    /** Attempts made so far for {@link #tunedChannel}'s current stream, including the first. */
+    private int playbackAttempt;
+    @Nullable
+    private Runnable pendingRetry;
 
     /** Keeps the video glued to the active page's preview slot across re-layouts. */
     @Nullable
@@ -177,6 +193,11 @@ public class PlayerActivity extends AppCompatActivity
                 // The new channel's picture is up; the snow can clear off it now.
                 staticNoiseView.settle();
             }
+
+            @Override
+            public void onPlayerError(@NonNull PlaybackException error) {
+                handlePlaybackError();
+            }
         });
 
         Channel current = channelManager.getCurrentChannel();
@@ -186,6 +207,7 @@ public class PlayerActivity extends AppCompatActivity
     }
 
     private void releasePlayer() {
+        cancelPendingRetry();
         staticNoiseView.clear();
         if (player != null) {
             player.release();
@@ -204,13 +226,22 @@ public class PlayerActivity extends AppCompatActivity
     }
 
     private void playChannel(Channel channel) {
+        cancelPendingRetry();
+        if (tunedChannel != null && !isSameChannel(tunedChannel, channel)) {
+            previousChannel = tunedChannel;
+        }
         tunedChannel = channel;
+        playbackAttempt = 1;
         if (player == null) {
             return;
         }
         // Snow covers the swap, and stays up over the black frame while the new
         // stream buffers; it clears itself once ExoPlayer renders a frame of it.
         staticNoiseView.burst();
+        startPlayback(channel);
+    }
+
+    private void startPlayback(Channel channel) {
         String streamUrl = TunarrApiClient.buildStreamUrl(channel.getId());
         MediaItem mediaItem = new MediaItem.Builder()
                 .setUri(streamUrl)
@@ -218,6 +249,54 @@ public class PlayerActivity extends AppCompatActivity
                 .build();
         player.setMediaItem(mediaItem);
         player.prepare();
+    }
+
+    /**
+     * ExoPlayer reported a playback failure for the current channel. Retries the same
+     * stream a few times before giving up, since a cold Tunarr transcode session can
+     * take several seconds to come up and briefly looks identical to a dead one.
+     */
+    private void handlePlaybackError() {
+        Channel failedChannel = tunedChannel;
+        if (failedChannel == null || player == null) {
+            return;
+        }
+        if (playbackAttempt < MAX_PLAYBACK_ATTEMPTS) {
+            playbackAttempt++;
+            pendingRetry = () -> {
+                pendingRetry = null;
+                if (player != null && isSameChannel(tunedChannel, failedChannel)) {
+                    startPlayback(failedChannel);
+                }
+            };
+            retryHandler.postDelayed(pendingRetry, PLAYBACK_RETRY_DELAY_MS);
+        } else {
+            Toast.makeText(this, R.string.channel_unavailable, Toast.LENGTH_LONG).show();
+            returnToPreviousChannel();
+        }
+    }
+
+    /** Falls back to whatever was tuned before the channel that just failed for good. */
+    private void returnToPreviousChannel() {
+        Channel fallback = previousChannel;
+        if (fallback == null) {
+            staticNoiseView.clear();
+            return;
+        }
+        channelManager.selectById(fallback.getId());
+        playChannel(fallback);
+        showFlipBar();
+    }
+
+    private void cancelPendingRetry() {
+        if (pendingRetry != null) {
+            retryHandler.removeCallbacks(pendingRetry);
+            pendingRetry = null;
+        }
+    }
+
+    private static boolean isSameChannel(@Nullable Channel a, @Nullable Channel b) {
+        return a != null && b != null && a.getId() != null && a.getId().equals(b.getId());
     }
 
     private void changeChannel(boolean up) {
