@@ -31,6 +31,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <!-- Channel-change snow. First child, so it covers the video but never the bars. -->
+        <com.kmsma.i_guide.StaticNoiseView
+            android:id="@+id/static_noise"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
         <com.kmsma.i_guide.MiniGuideView
             android:id="@+id/mini_guide"
             android:layout_width="match_parent"

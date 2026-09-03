@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.util.MimeTypes;
@@ -42,6 +43,7 @@ public class PlayerActivity extends AppCompatActivity
     private FlipBarView flipBarView;
     private QuickMenuView quickMenuView;
     private MiniGuideView miniGuideView;
+    private StaticNoiseView staticNoiseView;
 
     private final EpgRepository epg = EpgRepository.get();
     private final ChannelManager channelManager = new ChannelManager();
@@ -72,6 +74,7 @@ public class PlayerActivity extends AppCompatActivity
         flipBarView = findViewById(R.id.flip_bar);
         quickMenuView = findViewById(R.id.quick_menu);
         miniGuideView = findViewById(R.id.mini_guide);
+        staticNoiseView = findViewById(R.id.static_noise);
 
         favourites = new FavouritesStore(this);
 
@@ -168,6 +171,13 @@ public class PlayerActivity extends AppCompatActivity
         player = new ExoPlayer.Builder(this).build();
         playerView.setPlayer(player);
         player.setPlayWhenReady(true);
+        player.addListener(new Player.Listener() {
+            @Override
+            public void onRenderedFirstFrame() {
+                // The new channel's picture is up; the snow can clear off it now.
+                staticNoiseView.settle();
+            }
+        });
 
         Channel current = channelManager.getCurrentChannel();
         if (current != null) {
@@ -176,6 +186,7 @@ public class PlayerActivity extends AppCompatActivity
     }
 
     private void releasePlayer() {
+        staticNoiseView.clear();
         if (player != null) {
             player.release();
             player = null;
@@ -197,6 +208,9 @@ public class PlayerActivity extends AppCompatActivity
         if (player == null) {
             return;
         }
+        // Snow covers the swap, and stays up over the black frame while the new
+        // stream buffers; it clears itself once ExoPlayer renders a frame of it.
+        staticNoiseView.burst();
         String streamUrl = TunarrApiClient.buildStreamUrl(channel.getId());
         MediaItem mediaItem = new MediaItem.Builder()
                 .setUri(streamUrl)
@@ -230,6 +244,9 @@ public class PlayerActivity extends AppCompatActivity
     @Override
     public void pushScreen(@NonNull GuideScreen screen) {
         hideOverlays();
+        // A guide page takes the screen and the video shrinks into its preview slot,
+        // so a full-screen burst has nothing left to cover.
+        staticNoiseView.clear();
         GuideScreen previous = screenStack.peek();
         if (previous != null) {
             previous.onHidden();
