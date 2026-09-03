@@ -6,6 +6,7 @@ import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -37,7 +38,9 @@ public class GuideGridView extends LinearLayout {
 
     private static final int ROW_HEIGHT = 30;
     private static final int TIME_HEADER_HEIGHT = 24;
-    private static final int CHANNEL_COL_WIDTH = 74;
+    private static final int CHANNEL_COL_WIDTH = 96;
+    private static final int LOGO_WIDTH = 22;
+    private static final int LOGO_HEIGHT = 20;
 
     public interface OnSelectionChangedListener {
         void onSelectionChanged(@Nullable Channel channel, @Nullable Program program);
@@ -282,14 +285,31 @@ public class GuideGridView extends LinearLayout {
         number.setMinWidth(Ui.px(ctx, 18));
         cell.addView(number);
 
+        cell.addView(buildLogo(ctx, channel));
+
         TextView call = Ui.text(ctx, callSign(channel), 11f, false,
                 Ui.color(ctx, R.color.ig_text_channel));
         Ui.ellipsize(call);
         LayoutParams callLp = new LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f);
-        callLp.setMarginStart(Ui.px(ctx, 5));
+        callLp.setMarginStart(Ui.px(ctx, 4));
         call.setLayoutParams(callLp);
         cell.addView(call);
         return cell;
+    }
+
+    /**
+     * The channel's logo, sitting between its number and its call sign. Loads
+     * asynchronously and collapses to nothing for channels whose icon is missing or is
+     * a format Android cannot decode, so the call sign takes the space back.
+     */
+    private View buildLogo(Context ctx, Channel channel) {
+        ImageView logo = Ui.imageSlot(ctx, LOGO_WIDTH, LOGO_HEIGHT);
+        LayoutParams lp = (LayoutParams) logo.getLayoutParams();
+        lp.setMarginStart(Ui.px(ctx, 4));
+        // Decoded at twice the drawn size so it stays crisp on 4K panels.
+        ChannelIconLoader.get(ctx).load(logo, channel.getIconUrl(),
+                Ui.px(ctx, LOGO_WIDTH) * 2);
+        return logo;
     }
 
     private View buildProgramCell(Context ctx, Channel channel, Program program,

@@ -138,6 +138,18 @@ public final class Ui {
         return iv;
     }
 
+    /**
+     * An empty, fixed-size box for artwork fetched at runtime. Sized in design units so
+     * the slot holds its width whether or not the image ever arrives.
+     */
+    public static ImageView imageSlot(Context ctx, float designWidth, float designHeight) {
+        ImageView iv = new ImageView(ctx);
+        iv.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        iv.setLayoutParams(new LinearLayout.LayoutParams(px(ctx, designWidth),
+                px(ctx, designHeight)));
+        return iv;
+    }
+
     // ---- Misc --------------------------------------------------------------
 
     @SuppressWarnings("deprecation")

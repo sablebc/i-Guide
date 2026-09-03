@@ -1,5 +1,7 @@
 package com.kmsma.i_guide;
 
+import androidx.annotation.Nullable;
+
 import com.google.gson.annotations.SerializedName;
 
 /** Data model for a Tunarr channel, as returned by GET /api/channels. */
@@ -37,6 +39,12 @@ public class Channel {
 
     public Icon getIcon() {
         return icon;
+    }
+
+    /** Absolute URL for this channel's logo, or null when it has none. */
+    @Nullable
+    public String getIconUrl() {
+        return TunarrApiClient.buildIconUrl(icon != null ? icon.getPath() : null);
     }
 
     public String getStreamMode() {
