@@ -24,6 +24,9 @@ public final class EpgRepository {
     /** Ignore anything older than this when deciding what is "on now". */
     private static final long STALE_AFTER_MS = 30L * 60L * 1000L;
 
+    /** Matches the tuner's XMLTV regeneration cadence, so the app never reads a stale guide. */
+    private static final long AUTO_REFRESH_INTERVAL_MS = 15L * 60L * 1000L;
+
     public interface Listener {
         @MainThread
         void onEpgUpdated();
@@ -44,6 +47,7 @@ public final class EpgRepository {
     private boolean channelsLoaded;
     private boolean epgLoaded;
     private boolean loading;
+    private boolean autoRefreshScheduled;
 
     private EpgRepository() {
     }
@@ -59,6 +63,10 @@ public final class EpgRepository {
 
     /** Fetches the channel list and then the XMLTV feed. Safe to call repeatedly. */
     public void load() {
+        if (!autoRefreshScheduled) {
+            autoRefreshScheduled = true;
+            scheduleAutoRefresh();
+        }
         if (loading) {
             return;
         }
@@ -105,6 +113,14 @@ public final class EpgRepository {
                 });
             }
         });
+    }
+
+    /** Re-fetches on {@link #AUTO_REFRESH_INTERVAL_MS}, matching the tuner's own regen cadence. */
+    private void scheduleAutoRefresh() {
+        main.postDelayed(() -> {
+            load();
+            scheduleAutoRefresh();
+        }, AUTO_REFRESH_INTERVAL_MS);
     }
 
     /**
