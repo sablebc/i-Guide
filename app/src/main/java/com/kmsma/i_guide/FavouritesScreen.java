@@ -200,6 +200,7 @@ public class FavouritesScreen extends GuideScreen {
                 return true;
             case KeyEvent.KEYCODE_BOOKMARK:
             case KeyEvent.KEYCODE_PROG_YELLOW:
+            case KeyEvent.KEYCODE_MENU: // the Fire TV remote has no FAV key
                 removeSelected();
                 return true;
             case KeyEvent.KEYCODE_INFO:

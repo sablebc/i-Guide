@@ -463,6 +463,11 @@ public class PlayerActivity extends AppCompatActivity
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         playerView.setLayoutParams(lp);
         playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
+        // A page without a preview slot (the full-screen guide) must sit above the
+        // now full-size video, which attachPreviewSlot raised over it.
+        if (!screenStack.isEmpty()) {
+            screenContainer.bringToFront();
+        }
         // Put the bottom overlays back above the video now that it fills the screen.
         overlayContainer.bringToFront();
     }
@@ -554,6 +559,10 @@ public class PlayerActivity extends AppCompatActivity
                 flipBarView.hide();
                 miniGuideView.hide();
                 quickMenuView.show();
+                return true;
+            case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+                // The Fire TV remote has no GUIDE key; PLAY/PAUSE opens the full-page grid.
+                pushScreen(new ListingsByTimeScreen(this, this, null, true));
                 return true;
             case KeyEvent.KEYCODE_BOOKMARK:
             case KeyEvent.KEYCODE_PROG_YELLOW:

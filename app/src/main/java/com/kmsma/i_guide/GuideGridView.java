@@ -428,7 +428,30 @@ public class GuideGridView extends LinearLayout {
         if (next < 0 || next >= channels.size()) {
             return true;
         }
-        selectedRow = next;
+        selectRow(next);
+        return true;
+    }
+
+    /**
+     * Moves the cursor a whole screenful of channels up ({@code -1}) or down ({@code 1}),
+     * stopping at the first or last channel. Bound to REW/FF on the Fire TV remote.
+     */
+    public boolean pageRows(int direction) {
+        if (channels.isEmpty()) {
+            return false;
+        }
+        int next = selectedRow + direction * visibleRowCount;
+        next = Math.max(0, Math.min(next, channels.size() - 1));
+        if (next != selectedRow) {
+            selectRow(next);
+        }
+        return true;
+    }
+
+    private void selectRow(int row) {
+        int previousRow = selectedRow;
+        int previousFirst = firstVisibleRow;
+        selectedRow = row;
         ensureRowVisible();
         // Snap the anchor onto the new row's cell boundary so the cursor stays put
         // visually even when the two rows have completely different cell runs.
@@ -436,8 +459,27 @@ public class GuideGridView extends LinearLayout {
         if (landed != null) {
             anchorMs = Math.max(landed.getStartMs(), windowStart);
         }
-        rebuild();
-        return true;
+        if (firstVisibleRow == previousFirst) {
+            // Nothing scrolled, so only the two rows whose highlight changed need
+            // redrawing — rebuilding the whole page per key press stutters on a Fire
+            // TV Stick Lite when the D-pad is held down.
+            replaceRow(previousRow);
+            replaceRow(selectedRow);
+            notifySelection();
+        } else {
+            rebuild();
+        }
+    }
+
+    /** Rebuilds a single on-screen row in place; off-screen rows are ignored. */
+    private void replaceRow(int row) {
+        int index = row - firstVisibleRow;
+        if (index < 0 || index >= rowsContainer.getChildCount() || row >= channels.size()) {
+            return;
+        }
+        rowsContainer.removeViewAt(index);
+        rowsContainer.addView(buildRow(getContext(), channels.get(row), row == selectedRow),
+                index);
     }
 
     private boolean moveColumn(int delta) {
@@ -458,7 +500,9 @@ public class GuideGridView extends LinearLayout {
             return true;
         }
         anchorMs = Math.max(cells.get(next).getStartMs(), windowStart);
-        rebuild();
+        // Same window, same row: only that row's highlight moved.
+        replaceRow(selectedRow);
+        notifySelection();
         return true;
     }
 

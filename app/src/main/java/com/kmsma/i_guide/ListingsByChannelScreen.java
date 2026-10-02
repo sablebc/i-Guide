@@ -193,6 +193,7 @@ public class ListingsByChannelScreen extends GuideScreen {
                 stepChannel(1);
                 return true;
             case KeyEvent.KEYCODE_INFO:
+            case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
                 host.tuneTo(currentChannel());
                 return true;
             default:

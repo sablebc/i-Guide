@@ -23,17 +23,27 @@ public class ListingsByTimeScreen extends GuideScreen {
     @Nullable
     private final ProgramCategory categoryFilter;
 
+    /** Grid fills the page with no info panel or live preview; MENU toggles it. */
+    private boolean fullScreen;
+
     public ListingsByTimeScreen(@NonNull Context context, @NonNull ScreenHost host) {
         this(context, host, null);
+    }
+
+    public ListingsByTimeScreen(@NonNull Context context, @NonNull ScreenHost host,
+                                @Nullable ProgramCategory categoryFilter) {
+        this(context, host, categoryFilter, false);
     }
 
     /**
      * @param categoryFilter when set, only channels currently showing that category are
      *                       listed — this is what the Movies / Sports / Kids / Music
      *                       tiles in the Quick Menu open.
+     * @param fullScreen     start with the grid filling the page — what PLAY/PAUSE on
+     *                       live TV opens.
      */
     public ListingsByTimeScreen(@NonNull Context context, @NonNull ScreenHost host,
-                                @Nullable ProgramCategory categoryFilter) {
+                                @Nullable ProgramCategory categoryFilter, boolean fullScreen) {
         super(context, host);
         this.categoryFilter = categoryFilter;
 
@@ -47,11 +57,23 @@ public class ListingsByTimeScreen extends GuideScreen {
                 host.pushScreen(new ProgramInfoScreen(getContext(), host, channel, program)));
         addContent(grid);
 
-        getFooterBar().setHints(
-                context.getString(R.string.hint_by_time_left),
-                context.getString(R.string.hint_by_time_right));
-
+        applyLayout(fullScreen);
         bindChannels();
+    }
+
+    /** Switches between the full-page grid and the info panel + live preview layout. */
+    private void setFullScreen(boolean on) {
+        applyLayout(on);
+        host.bindLivePreview(getLivePreviewSlot());
+    }
+
+    private void applyLayout(boolean on) {
+        fullScreen = on;
+        infoPanel.setVisibility(on ? GONE : VISIBLE);
+        Context ctx = getContext();
+        getFooterBar().setHints(
+                ctx.getString(on ? R.string.hint_full_guide_left : R.string.hint_by_time_left),
+                ctx.getString(on ? R.string.hint_full_guide_right : R.string.hint_by_time_right));
     }
 
     @Override
@@ -106,17 +128,28 @@ public class ListingsByTimeScreen extends GuideScreen {
     @Nullable
     @Override
     public View getLivePreviewSlot() {
-        return infoPanel.getPreviewSlot();
+        return fullScreen ? null : infoPanel.getPreviewSlot();
     }
 
     @Override
     public boolean onScreenKeyDown(int keyCode, KeyEvent event) {
-        // INFO tunes straight to the highlighted channel without a detour through
-        // Program Information.
-        if (keyCode == KeyEvent.KEYCODE_INFO) {
-            host.tuneTo(grid.getSelectedChannel());
-            return true;
+        switch (keyCode) {
+            // INFO tunes straight to the highlighted channel without a detour through
+            // Program Information. The Fire TV remote has no INFO key, so PLAY/PAUSE
+            // does the same.
+            case KeyEvent.KEYCODE_INFO:
+            case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+                host.tuneTo(grid.getSelectedChannel());
+                return true;
+            case KeyEvent.KEYCODE_MENU:
+                setFullScreen(!fullScreen);
+                return true;
+            case KeyEvent.KEYCODE_MEDIA_REWIND:
+                return grid.pageRows(-1);
+            case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
+                return grid.pageRows(1);
+            default:
+                return grid.handleKey(keyCode);
         }
-        return grid.handleKey(keyCode);
     }
 }

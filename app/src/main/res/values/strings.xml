@@ -22,9 +22,11 @@
     <!-- Footer hints -->
     <string name="hint_main_menu">Press ▲▼ to browse, then press OK/Select</string>
     <string name="hint_by_time_left">▲▼◄► Browse listings</string>
-    <string name="hint_by_time_right">Press OK/Select for details — INFO to tune</string>
-    <string name="hint_by_channel">▲▼ Browse — ◄► Change channel — OK/Select to tune</string>
-    <string name="hint_favourites">▲▼ Browse — OK/Select to tune — FAV to remove from list</string>
+    <string name="hint_by_time_right">OK for details — PLAY to watch — MENU full screen</string>
+    <string name="hint_full_guide_left">▲▼◄► Browse — REW/FF page</string>
+    <string name="hint_full_guide_right">OK details — PLAY watch — MENU preview</string>
+    <string name="hint_by_channel">▲▼ Browse — ◄► Change channel — PLAY to tune</string>
+    <string name="hint_favourites">▲▼ Browse — OK/Select to tune — MENU to remove from list</string>
     <string name="hint_mini_guide">▲▼ Browse — OK/Select to tune — EXIT to close</string>
 
     <!-- Main menu description -->
